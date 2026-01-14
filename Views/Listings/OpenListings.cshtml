@@ -1,0 +1,126 @@
+@model List<ServiceMarketplace.Models.Listing>
+
+@{
+    ViewData["Title"] = "Açık İlanlar";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-search"></i> Açık İlanlar</h2>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Hizmet Türü</label>
+                    <select name="serviceType" class="form-select">
+                        <option value="">Tümü</option>
+                        <option value="Boya" selected="@(ViewBag.ServiceTypeFilter == "Boya")">🎨 Boya</option>
+                        <option value="Seramik" selected="@(ViewBag.ServiceTypeFilter == "Seramik")">🧱 Seramik</option>
+                        <option value="Alçıpan" selected="@(ViewBag.ServiceTypeFilter == "Alçıpan")">📐 Alçıpan</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Konum</label>
+                    <input type="text" name="location" class="form-control" value="@ViewBag.LocationFilter" placeholder="Konuma göre filtrele">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="bi bi-search"></i> Filtrele
+                    </button>
+                    <a asp-action="OpenListings" class="btn btn-outline-secondary">Temizle</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center">
+            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+            <h5>Açık ilan bulunamadı</h5>
+            <p>Yeni iş fırsatları için daha sonra tekrar kontrol edin.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var listing in Model)
+            {
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span class="badge @(listing.ServiceType == "Boya" ? "bg-warning text-dark" : listing.ServiceType == "Seramik" ? "bg-info" : "bg-success")">
+                                @listing.ServiceType
+                            </span>
+                            <small class="text-muted">@listing.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">@listing.Title</h5>
+                            <p class="card-text text-muted">@(listing.Description?.Length > 100 ? listing.Description.Substring(0, 100) + "..." : listing.Description)</p>
+                            
+                            <div class="row text-center mb-3">
+                                <div class="col-3">
+                                    <small class="text-muted">Alan</small>
+                                    <h6>@listing.Area m²</h6>
+                                </div>
+                                <div class="col-3">
+                                    <small class="text-muted">Oda</small>
+                                    <h6>@listing.RoomCount</h6>
+                                </div>
+                                <div class="col-3">
+                                    <small class="text-muted">Tah. Gün</small>
+                                    <h6>@listing.EstimatedDaysMin-@listing.EstimatedDaysMax</h6>
+                                </div>
+                                <div class="col-3">
+                                    <small class="text-muted">Teklifler</small>
+                                    <h6>@listing.Offers.Count</h6>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-geo-alt text-danger"></i> @listing.Location
+                                </div>
+                                @if (listing.Budget.HasValue)
+                                {
+                                    <span class="badge bg-success">Bütçe: ₺@listing.Budget.Value.ToString("N0")</span>
+                                }
+                            </div>
+
+                            @if (listing.StartDate.HasValue || listing.Deadline.HasValue)
+                            {
+                                <div class="mt-2">
+                                    @if (listing.StartDate.HasValue)
+                                    {
+                                        <small class="text-muted"><i class="bi bi-calendar-event"></i> Başlangıç: @listing.StartDate.Value.ToString("dd.MM.yyyy")</small>
+                                    }
+                                    @if (listing.Deadline.HasValue)
+                                    {
+                                        <small class="text-warning ms-2"><i class="bi bi-alarm"></i> Son Tarih: @listing.Deadline.Value.ToString("dd.MM.yyyy")</small>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        <div class="card-footer d-flex justify-content-between">
+                            <div>
+                                <small class="text-muted">Tah. Toplam: </small>
+                                <strong>₺@((listing.EstimatedMaterialMin + listing.EstimatedLaborMin).ToString("N0")) - ₺@((listing.EstimatedMaterialMax + listing.EstimatedLaborMax).ToString("N0"))</strong>
+                            </div>
+                            <div>
+                                <a asp-action="Details" asp-route-id="@listing.Id" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-eye"></i> Görüntüle
+                                </a>
+                                <a asp-controller="Offers" asp-action="Create" asp-route-listingId="@listing.Id" class="btn btn-success btn-sm">
+                                    <i class="bi bi-send"></i> Teklif Ver
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

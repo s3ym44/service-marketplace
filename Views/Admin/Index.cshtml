@@ -1,0 +1,123 @@
+@model IEnumerable<ServiceMarketplace.Models.AdminPriceReference>
+
+@{
+    ViewData["Title"] = "Yönetim Paneli - Fiyat Yönetimi";
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-gear"></i> Fiyat Yönetimi</h2>
+        <div>
+            <a asp-action="Create" class="btn btn-success"><i class="bi bi-plus-lg"></i> Fiyat Ekle</a>
+            <a asp-action="BulkUpdate" class="btn btn-warning"><i class="bi bi-percent"></i> Toplu Güncelleme</a>
+            <a asp-action="RegionModifier" class="btn btn-info"><i class="bi bi-geo-alt"></i> Bölge Çarpanı</a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Kategori</label>
+                    <select name="category" class="form-select">
+                        <option value="">Tüm Kategoriler</option>
+                        @foreach (var cat in ViewBag.Categories as List<string> ?? new List<string>())
+                        {
+                            <option value="@cat" selected="@(ViewBag.CurrentCategory == cat)">@cat</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Marka</label>
+                    <input name="brand" class="form-control" value="@ViewBag.CurrentBrand" placeholder="Marka ara...">
+                </div>
+                <div class="col-md-3">
+                    <div class="form-check">
+                        <input type="checkbox" name="showInactive" value="true" class="form-check-input" 
+                               id="showInactive" @(ViewBag.ShowInactive ? "checked" : "")>
+                        <label class="form-check-label" for="showInactive">Pasif Olanları Göster</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary">Filtrele</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Sıfırla</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Price Table -->
+    <div class="card">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Kategori</th>
+                        <th>Malzeme</th>
+                        <th>Marka</th>
+                        <th>Kalite</th>
+                        <th>Miktar/Birim</th>
+                        <th>Temel Fiyat</th>
+                        <th>Bölge Çrp.</th>
+                        <th>Durum</th>
+                        <th width="180">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr class="@(!item.IsActive ? "table-secondary" : "")">
+                            <td><span class="badge bg-primary">@item.Category</span></td>
+                            <td>@item.MaterialName</td>
+                            <td>@item.Brand</td>
+                            <td>@item.Quality</td>
+                            <td>@item.Quantity @item.Unit</td>
+                            <td class="fw-bold">₺@item.BasePrice.ToString("N2")</td>
+                            <td>×@item.RegionModifier</td>
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge bg-success">Aktif</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Pasif</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Düzenle</a>
+                                @if (item.IsActive)
+                                {
+                                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline"
+                                          onsubmit="return confirm('Bu fiyatı pasifleştirmek istiyor musunuz?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Pasifleştir</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form asp-action="Restore" asp-route-id="@item.Id" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-success">Aktifleştir</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer text-muted">
+            Toplam: @Model.Count() kalem
+        </div>
+    </div>
+</div>

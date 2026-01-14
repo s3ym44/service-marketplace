@@ -1,0 +1,328 @@
+@model ServiceMarketplace.ViewModels.CreateOfferViewModel
+
+@{
+    ViewData["Title"] = "Teklif Oluştur";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/offers.css" />
+}
+
+<div class="container-fluid offer-container">
+    <form asp-action="Create" method="post" id="offerForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="OfferData.ListingId" Value="@Model.ListingId" />
+        <input type="hidden" id="listingArea" value="@Model.ListingArea" />
+        <input type="hidden" asp-for="OfferData.MaterialsJson" id="MaterialsJson" />
+        
+        <input type="hidden" asp-for="OfferData.AdditionalServicesJson" id="AdditionalServicesJson" />
+        <div class="offer-create-layout">
+            
+            <!-- VALIDATION SUMMARY - Shows all validation errors -->
+            <div class="col-12 mb-3">
+                <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+            </div>
+            
+            <!-- LEFT: Listing Details (Read Only) -->
+            <div class="offer-section-left">
+                <div class="offer-card bg-light">
+                    <h5>@Model.ListingTitle</h5>
+                    <p><strong>Alan:</strong> @Model.ListingArea m²</p>
+                    <hr />
+                    <h6>Sistem Tahminleri</h6>
+                    <ul class="list-unstyled small">
+                        <li>Boya: @Model.Calculation?.RequiredPaint Lt</li>
+                        <li>Astar: @Model.Calculation?.RequiredPrimer Lt</li>
+                        <li>İşçilik: @Model.Calculation?.EstimatedLaborMin - @Model.Calculation?.EstimatedLaborMax ₺</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- CENTER: Inputs -->
+            <div class="offer-section-center">
+                
+                <!-- Labor Section -->
+                <div class="offer-card">
+                    <h5>1. İşçilik & Zamanlama</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">İşçilik Maliyet Türü</label>
+                            <select asp-for="OfferData.LaborCostType" class="form-select" id="LaborCostType">
+                                <option value="Fixed">Sabit Fiyat</option>
+                                <option value="PerM2">m² Başına</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Maliyet (₺)</label>
+                            <input asp-for="OfferData.LaborCost" class="form-control" id="LaborCost" type="number" step="0.01" />
+                            <span asp-validation-for="OfferData.LaborCost" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tahmini Gün</label>
+                            <input asp-for="OfferData.EstimatedDays" class="form-control" type="number" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Garanti (Ay)</label>
+                            <input asp-for="OfferData.WarrantyMonths" class="form-control" type="number" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Material Section -->
+                <div class="offer-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">2. Malzemeler</h5>
+                        <!-- Button to trigger modal could go here, for inline simplified -->
+                    </div>
+
+                    <div class="mb-3 p-3 border rounded bg-light">
+                        <h6>Malzeme Ekle</h6>
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <select class="form-select form-select-sm" id="materialSourceType">
+                                    <option value="Admin">Admin Stok</option>
+                                    <option value="Custom">Özel</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Admin Selector -->
+                            <div class="col-md-6" id="adminSelector">
+                                <select class="form-select form-select-sm" id="adminMaterialSelect">
+                                    <option value="">Malzeme Seçin...</option>
+                                    @foreach(var item in Model.AdminMaterials)
+                                    {
+                                        <option value="@item.Id" 
+                                                data-price="@item.BasePrice"
+                                                data-name="@item.MaterialName"
+                                                data-brand="@item.Brand"
+                                                data-unit="@item.Unit">
+                                            @item.MaterialName - @item.Brand (@item.BasePrice ₺ / @item.Unit)
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+
+                            <!-- Custom Inputs (Hidden by default, simplified for this demo to show logic) -->
+                            <div class="col-md-6 d-none" id="customSelector">
+                                <input type="text" id="customMatName" class="form-control form-control-sm mb-1" placeholder="Ad">
+                                <input type="number" id="customMatPrice" class="form-control form-control-sm" placeholder="Fiyat">
+                            </div>
+
+                            <div class="col-md-2">
+                                <input type="number" id="matQty" class="form-control form-control-sm" value="1" placeholder="Miktar">
+                            </div>
+
+                            <div class="col-md-1">
+                                <button type="button" class="btn btn-primary btn-sm w-100" id="btnAddMaterial">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <table class="table table-sm table-hover material-list-table">
+                        <thead>
+                            <tr>
+                                <th>Ürün</th>
+                                <th>Miktar</th>
+                                <th>Birim Fiyat</th>
+                                <th>Toplam</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="materialListBody">
+                            <!-- Filled by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            <!-- RIGHT: Summary (Live) -->
+            <div class="offer-section-right">
+                <div class="offer-card summary-sticky">
+                    <h5>Teklif Özeti</h5>
+                    
+                    <div class="summary-row">
+                        <span>İşçilik:</span>
+                        <span id="displayLaborTotal">0.00</span>
+                    </div>
+                     <div class="summary-row">
+                        <span>Malzemeler:</span>
+                        <span id="displayMaterialTotal">0.00</span>
+                    </div>
+                    
+                    <div class="summary-row summary-total">
+                        <span>TOPLAM (₺):</span>
+                        <span id="displayGrandTotal">0.00</span>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-success w-100 btn-lg">Teklifi Gönder</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+$(document).ready(function() {
+        console.log("Offer Calculator Initialized");
+
+        const state = {
+            laborCost: 0,
+            laborType: 'Fixed',
+            area: parseFloat($('#listingArea').val()) || 0,
+            materials: [],
+            extras: []
+        };
+        window.state = state;
+        initEvents();
+        renderMaterialList();
+        calculateTotal();
+
+        function initEvents() {
+            $('#LaborCost, #LaborCostType').on('change input', function() {
+                state.laborCost = parseFloat($('#LaborCost').val()) || 0;
+                state.laborType = $('#LaborCostType').val();
+                calculateTotal();
+            });
+
+            // Simple toggle for source type
+            $('#materialSourceType').change(function() {
+                if($(this).val() === 'Admin') {
+                    $('#adminSelector').removeClass('d-none');
+                    $('#customSelector').addClass('d-none');
+                } else {
+                    $('#adminSelector').addClass('d-none');
+                    $('#customSelector').removeClass('d-none');
+                }
+            });
+
+            $('#btnAddMaterial').click(function() {
+                const type = $('#materialSourceType').val();
+                if(type === 'Admin') {
+                    const selected = $('#adminMaterialSelect option:selected');
+                    if(!selected.val()) return;
+                    
+                    addMaterial({
+                        name: selected.data('name'),
+                        brand: selected.data('brand'),
+                        quantity: parseFloat($('#matQty').val()) || 1,
+                        unit: selected.data('unit'),
+                        unitPrice: parseFloat(selected.data('price')),
+                        source: 'AdminStock',
+                        adminPriceId: parseInt(selected.val())
+                    });
+                    
+                    $('#adminMaterialSelect').val('');
+                    $('#matQty').val(1);
+                } else {
+                    const name = $('#customMatName').val();
+                    const price = parseFloat($('#customMatPrice').val()) || 0;
+                    
+                    if(!name || price <= 0) {
+                        alert('Lütfen malzeme adı ve fiyat girin');
+                        return;
+                    }
+                    
+                    addMaterial({
+                        name: name,
+                        brand: 'Özel',
+                        quantity: parseFloat($('#matQty').val()) || 1,
+                        unit: 'Adet',
+                        unitPrice: price,
+                        source: 'Custom',
+                        adminPriceId: null
+                    });
+                    
+                    $('#customMatName').val('');
+                    $('#customMatPrice').val('');
+                    $('#matQty').val(1);
+                }
+            });
+            
+            // FORM SUBMIT
+            $('#offerForm').on('submit', function(e) {
+                console.log('Form submitting...');
+                
+                const materialsJson = JSON.stringify(state.materials);
+                $('#MaterialsJson').val(materialsJson);
+                console.log('Materials JSON:', materialsJson);
+                
+                const servicesJson = JSON.stringify(state.extras);
+                $('#AdditionalServicesJson').val(servicesJson);
+                console.log('Services JSON:', servicesJson);
+                
+                if(state.materials.length === 0) {
+                    e.preventDefault();
+                    alert('Lütfen en az bir malzeme ekleyin');
+                    return false;
+                }
+                
+                if(state.laborCost <= 0) {
+                    e.preventDefault();
+                    alert('Lütfen işçilik maliyetini girin');
+                    return false;
+                }
+                
+                console.log('Form validation passed!');
+            });
+        }
+        
+        window.addMaterial = function(material) {
+            material.totalPrice = material.quantity * material.unitPrice;
+            state.materials.push(material);
+            renderMaterialList();
+            calculateTotal();
+        };
+
+        window.removeMaterial = function(index) {
+            state.materials.splice(index, 1);
+            renderMaterialList();
+            calculateTotal();
+        };
+
+        function renderMaterialList() {
+            const tbody = $('#materialListBody');
+            tbody.empty();
+
+            state.materials.forEach((m, index) => {
+                const html = `
+                    <tr>
+                        <td>${m.name} <small class="text-muted d-block">${m.brand} - ${m.source}</small></td>
+                        <td>${m.quantity} ${m.unit}</td>
+                        <td>₺${m.unitPrice.toFixed(2)}</td>
+                        <td>₺${m.totalPrice.toFixed(2)}</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-danger" onclick="removeMaterial(${index})">&times;</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.append(html);
+            });
+
+            $('#MaterialsJson').val(JSON.stringify(state.materials));
+        }
+
+        function calculateTotal() {
+            let laborTotal = 0;
+            if(state.laborType === 'Fixed') {
+                laborTotal = state.laborCost;
+            } else {
+                laborTotal = state.laborCost * state.area;
+            }
+
+            let materialTotal = state.materials.reduce((sum, m) => sum + m.totalPrice, 0);
+            const total = laborTotal + materialTotal;
+
+            $('#displayLaborTotal').text('₺' + laborTotal.toFixed(2));
+            $('#displayMaterialTotal').text('₺' + materialTotal.toFixed(2));
+            $('#displayGrandTotal').text('₺' + total.toFixed(2));
+        }
+    });
+    </script>
+}

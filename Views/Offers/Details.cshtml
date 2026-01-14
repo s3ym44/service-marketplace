@@ -1,0 +1,84 @@
+@model ServiceMarketplace.Models.Offer
+
+@{
+    ViewData["Title"] = "Teklif Detayları";
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3>Teklif #@Model.Id Detayları</h3>
+            @{
+                var statusText = Model.Status switch
+                {
+                    "Pending" => "Beklemede",
+                    "Accepted" => "Kabul Edildi",
+                    "Rejected" => "Reddedildi",
+                    "Cancelled" => "İptal Edildi",
+                    _ => Model.Status
+                };
+            }
+            <span class="badge bg-primary">@statusText</span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                     <h4>Maliyet Dökümü</h4>
+                     <dl class="row">
+                         <dt class="col-sm-4">Toplam Fiyat</dt>
+                         <dd class="col-sm-8 text-success fw-bold">@Model.TotalOfferPrice.ToString("C")</dd>
+
+                         <dt class="col-sm-4">İşçilik Maliyeti</dt>
+                         <dd class="col-sm-8">@Model.LaborCost.ToString("C") (@(Model.LaborCostType == "Fixed" ? "Sabit" : "m² Başına"))</dd>
+
+                         <dt class="col-sm-4">Malzeme Maliyeti</dt>
+                         <dd class="col-sm-8">@Model.MaterialCostTotal.ToString("C")</dd>
+                     </dl>
+                </div>
+                <div class="col-md-6">
+                    <h4>Taahhütler</h4>
+                     <dl class="row">
+                         <dt class="col-sm-4">Tahmini Süre</dt>
+                         <dd class="col-sm-8">@Model.EstimatedDays gün</dd>
+
+                         <dt class="col-sm-4">Garanti</dt>
+                         <dd class="col-sm-8">@Model.WarrantyMonths ay</dd>
+                     </dl>
+                </div>
+            </div>
+
+            <h4 class="mt-4">Dahil Malzemeler</h4>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Malzeme</th>
+                        <th>Marka</th>
+                        <th>Miktar</th>
+                        <th>Birim Fiyat</th>
+                        <th>Toplam</th>
+                        <th>Kaynak</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(var mat in Model.Materials)
+                    {
+                        <tr>
+                            <td>@mat.MaterialName</td>
+                            <td>@mat.Brand</td>
+                            <td>@mat.Quantity @mat.Unit</td>
+                            <td>@mat.UnitPrice.ToString("C")</td>
+                            <td>@mat.TotalPrice.ToString("C")</td>
+                            <td>@(mat.Source == "AdminStock" ? "Admin Stok" : "Özel")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer d-flex justify-content-between">
+            <a asp-action="MyOffers" class="btn btn-secondary">Listeye Dön</a>
+            <a asp-action="DownloadPdf" asp-route-id="@Model.Id" class="btn btn-primary">
+                <i class="bi bi-file-earmark-pdf"></i> PDF İndir
+            </a>
+        </div>
+    </div>
+</div>

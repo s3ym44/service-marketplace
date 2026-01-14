@@ -1,0 +1,63 @@
+@model ServiceMarketplace.ViewModels.RegionModifierViewModel
+
+@{
+    ViewData["Title"] = "Bölge Çarpanı";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4><i class="bi bi-geo-alt"></i> Bölge Çarpanı Ayarları</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 
+                        Bölge çarpanı, farklı bölgeler için temel fiyatları ayarlar. 
+                        <br>Örnek: 1.2 = o bölge için %20 daha yüksek fiyatlar.
+                    </div>
+
+                    <form asp-action="RegionModifier" method="post">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="mb-3">
+                            <label asp-for="SelectedCategory" class="form-label">Kategori</label>
+                            <select asp-for="SelectedCategory" class="form-select">
+                                <option value="">-- Tüm Kategoriler --</option>
+                                @foreach (var cat in Model.Categories)
+                                {
+                                    <option value="@cat">@cat</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="NewModifier" class="form-label">Yeni Bölge Çarpanı</label>
+                            <input asp-for="NewModifier" class="form-control form-control-lg" 
+                                   type="number" step="0.1" min="0.1" max="5.0">
+                            <span asp-validation-for="NewModifier" class="text-danger"></span>
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <code>1.0</code> = Normal, <code>1.1</code> = +%10, <code>0.9</code> = -%10
+                                </small>
+                            </div>
+                        </div>
+
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">İptal</a>
+                            <button type="submit" class="btn btn-info">
+                                <i class="bi bi-check-lg"></i> Çarpanı Uygula
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

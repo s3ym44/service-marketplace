@@ -1,0 +1,231 @@
+﻿@{
+    ViewData["Title"] = "Ana Sayfa";
+}
+
+<div class="hero-section">
+    <div class="hero-content text-center">
+        <h1 class="hero-title">Hizmet Pazarı</h1>
+        <p class="hero-subtitle">Boya, seramik ve alçıpan hizmetleri için ilanlar oluşturun ve en iyi teklifleri alın</p>
+        
+        <div class="hero-buttons mt-4">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                @if (User.IsInRole("Customer"))
+                {
+                    <a asp-controller="Listings" asp-action="Create" class="btn btn-light btn-lg me-3">
+                        <i class="bi bi-plus-circle"></i> İlan Oluştur
+                    </a>
+                    <a asp-controller="Listings" asp-action="MyListings" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-list-ul"></i> İlanlarım
+                    </a>
+                }
+                else if (User.IsInRole("Supplier"))
+                {
+                    <a asp-controller="Listings" asp-action="OpenListings" class="btn btn-light btn-lg me-3">
+                        <i class="bi bi-search"></i> İş Bul
+                    </a>
+                    <a asp-controller="Offers" asp-action="MyOffers" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-envelope"></i> Tekliflerim
+                    </a>
+                }
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Register" class="btn btn-light btn-lg me-3">
+                    <i class="bi bi-person-plus"></i> Hemen Kayıt Ol
+                </a>
+                <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-lg">
+                    <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="container mt-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="feature-card text-center p-4">
+                <div class="feature-icon">
+                    <i class="bi bi-palette"></i>
+                </div>
+                <h4>Boya Hizmetleri</h4>
+                <p class="text-muted">Profesyonel boya ustalarından teklif alın</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card text-center p-4">
+                <div class="feature-icon feature-icon-green">
+                    <i class="bi bi-grid-3x3"></i>
+                </div>
+                <h4>Seramik İşleri</h4>
+                <p class="text-muted">Mutfak ve banyo seramik döşeme uzmanları</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card text-center p-4">
+                <div class="feature-icon feature-icon-orange">
+                    <i class="bi bi-building"></i>
+                </div>
+                <h4>Alçıpan</h4>
+                <p class="text-muted">Asma tavan ve bölme duvar çözümleri</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12 text-center">
+            <h3 class="mb-4">Nasıl Çalışır?</h3>
+        </div>
+        <div class="col-md-4 text-center">
+            <div class="step-number">1</div>
+            <h5>İlan Oluşturun</h5>
+            <p class="text-muted">Projenizin detaylarını ve ölçülerini girin</p>
+        </div>
+        <div class="col-md-4 text-center">
+            <div class="step-number">2</div>
+            <h5>Teklifler Alın</h5>
+            <p class="text-muted">Tedarikçilerden teklifler gelsin</p>
+        </div>
+        <div class="col-md-4 text-center">
+            <div class="step-number">3</div>
+            <h5>En İyisini Seçin</h5>
+            <p class="text-muted">Teklifleri karşılaştırın ve uygun olanı seçin</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #1e3a5f 0%, #0f2847 100%);
+        margin: -1rem calc(-50vw + 50%) 0 calc(-50vw + 50%);
+        width: 100vw;
+        padding: 5rem 2rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    @@keyframes float {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(5deg); }
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        text-shadow: 0 2px 20px rgba(0,0,0,0.2);
+    }
+    
+    .hero-subtitle {
+        font-size: 1.3rem;
+        opacity: 0.9;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .hero-buttons .btn {
+        padding: 0.875rem 2rem;
+        font-weight: 600;
+        border-radius: 50px;
+    }
+    
+    .btn-light {
+        background: #ff6b35;
+        color: white;
+    }
+    
+    .btn-light:hover {
+        background: #f7931e;
+        color: white;
+    }
+    
+    .btn-outline-light:hover {
+        background: rgba(255,255,255,0.2);
+    }
+    
+    .feature-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    }
+    
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #1e3a5f 0%, #0f2847 100%);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2rem;
+        color: white;
+    }
+    
+    .feature-icon-green {
+        background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+    }
+    
+    .feature-icon-orange {
+        background: linear-gradient(135deg, #ff8c42 0%, #ffb347 100%);
+    }
+    
+    .step-number {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+        margin: 0 auto 1rem;
+    }
+    
+    @@media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
+        
+        .hero-buttons .btn {
+            display: block;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        
+        .hero-buttons .btn.me-3 {
+            margin-right: 0 !important;
+        }
+    }
+</style>

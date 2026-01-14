@@ -1,0 +1,174 @@
+@model ServiceMarketplace.ViewModels.ListingDetailViewModel
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Ana Sayfa</a></li>
+            <li class="breadcrumb-item"><a asp-action="OpenListings">İlanlar</a></li>
+            <li class="breadcrumb-item active">#@Model.Id</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="badge @(Model.ServiceType == "Boya" ? "bg-warning text-dark" : Model.ServiceType == "Seramik" ? "bg-info" : "bg-success") fs-6">
+                        @Model.ServiceType
+                    </span>
+                    <span class="badge @(Model.Status == "Open" ? "bg-success" : Model.Status == "InProgress" ? "bg-primary" : "bg-secondary") fs-6">
+                        @(Model.Status == "Open" ? "Açık" : Model.Status == "InProgress" ? "Devam Ediyor" : "Kapalı")
+                    </span>
+                </div>
+                <div class="card-body">
+                    <h3>@Model.Title</h3>
+                    
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <p class="text-muted">@Model.Description</p>
+                    }
+
+                    <hr>
+
+                    <div class="row text-center mb-4">
+                        <div class="col-md-3">
+                            <div class="border rounded p-3">
+                                <i class="bi bi-rulers text-primary" style="font-size: 1.5rem;"></i>
+                                <h5 class="mb-0">@Model.Area m²</h5>
+                                <small class="text-muted">Alan</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border rounded p-3">
+                                <i class="bi bi-door-open text-info" style="font-size: 1.5rem;"></i>
+                                <h5 class="mb-0">@Model.RoomCount</h5>
+                                <small class="text-muted">Oda</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border rounded p-3">
+                                <i class="bi bi-arrows-vertical text-success" style="font-size: 1.5rem;"></i>
+                                <h5 class="mb-0">@Model.CeilingHeight m</h5>
+                                <small class="text-muted">Tavan</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border rounded p-3">
+                                <i class="bi bi-calendar3 text-warning" style="font-size: 1.5rem;"></i>
+                                <h5 class="mb-0">@Model.EstimatedDaysMin-@Model.EstimatedDaysMax</h5>
+                                <small class="text-muted">Gün</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><i class="bi bi-geo-alt text-danger"></i> <strong>Konum:</strong> @Model.Location</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><i class="bi bi-clock"></i> <strong>Yayınlandı:</strong> @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+                        </div>
+                    </div>
+
+                    @if (Model.StartDate.HasValue || Model.Deadline.HasValue)
+                    {
+                        <div class="row mb-3">
+                            @if (Model.StartDate.HasValue)
+                            {
+                                <div class="col-md-6">
+                                    <p><i class="bi bi-calendar-event text-success"></i> <strong>Başlangıç Tarihi:</strong> @Model.StartDate.Value.ToString("dd.MM.yyyy")</p>
+                                </div>
+                            }
+                            @if (Model.Deadline.HasValue)
+                            {
+                                <div class="col-md-6">
+                                    <p><i class="bi bi-alarm text-warning"></i> <strong>Son Tarih:</strong> @Model.Deadline.Value.ToString("dd.MM.yyyy")</p>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    @if (Model.Budget.HasValue)
+                    {
+                        <div class="alert alert-success">
+                            <i class="bi bi-cash"></i> <strong>Bütçe:</strong> ₺@Model.Budget.Value.ToString("N0")
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Customer Info -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-person-circle"></i> Müşteri
+                </div>
+                <div class="card-body">
+                    <h5>@Model.CustomerName</h5>
+                    @if (!string.IsNullOrEmpty(Model.CustomerPhone))
+                    {
+                        <p><i class="bi bi-telephone"></i> @Model.CustomerPhone</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Estimates -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <i class="bi bi-calculator"></i> Tahminler
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm mb-0">
+                        <tr>
+                            <td>Malzemeler</td>
+                            <td class="text-end">₺@Model.EstimatedMaterialMin.ToString("N0") - ₺@Model.EstimatedMaterialMax.ToString("N0")</td>
+                        </tr>
+                        <tr>
+                            <td>İşçilik</td>
+                            <td class="text-end">₺@Model.EstimatedLaborMin.ToString("N0") - ₺@Model.EstimatedLaborMax.ToString("N0")</td>
+                        </tr>
+                        <tr class="table-success">
+                            <th>Toplam</th>
+                            <th class="text-end">₺@Model.EstimatedTotalMin.ToString("N0") - ₺@Model.EstimatedTotalMax.ToString("N0")</th>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Offers Summary -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-envelope"></i> Teklifler (@Model.OfferCount)
+                </div>
+                <div class="card-body">
+                    @if (Model.OfferCount > 0)
+                    {
+                        <p>En düşük teklif: <strong class="text-success">₺@(Model.LowestOffer?.ToString("N0") ?? "-")</strong></p>
+                        @if (User.IsInRole("Customer"))
+                        {
+                            <a asp-controller="Customer" asp-action="Offers" asp-route-listingId="@Model.Id" class="btn btn-primary w-100">
+                                <i class="bi bi-grid-3x3-gap"></i> Teklifleri Karşılaştır
+                            </a>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted">Henüz teklif yok</p>
+                    }
+
+                    @if (User.IsInRole("Supplier") && Model.Status == "Open")
+                    {
+                        <a asp-controller="Offers" asp-action="Create" asp-route-listingId="@Model.Id" class="btn btn-success w-100 mt-2">
+                            <i class="bi bi-send"></i> Teklif Ver
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

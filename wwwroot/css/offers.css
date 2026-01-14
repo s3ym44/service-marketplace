@@ -1,0 +1,92 @@
+/* offers.css */
+
+.offer-container {
+    padding: 20px;
+}
+
+/* Three column layout for Create page */
+.offer-create-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+@media (min-width: 992px) {
+    .offer-create-layout {
+        grid-template-columns: 300px 1fr 300px;
+        align-items: start;
+    }
+}
+
+/* Cards */
+.offer-card {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.offer-card h5 {
+    border-bottom: 2px solid #f0f2f5;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+/* Material Selector */
+.material-selector-item {
+    cursor: pointer;
+    border: 1px solid #eee;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.material-selector-item:hover {
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+}
+
+.material-selector-item.selected {
+    border-color: #0d6efd;
+    background-color: #e7f1ff;
+}
+
+/* Summary Box */
+.summary-sticky {
+    position: sticky;
+    top: 20px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+}
+
+.summary-total {
+    border-top: 2px solid #dee2e6;
+    padding-top: 10px;
+    margin-top: 10px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #198754;
+}
+
+.validation-error {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 5px;
+}
+
+/* Material List Table */
+.material-list-table th {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: #6c757d;
+}

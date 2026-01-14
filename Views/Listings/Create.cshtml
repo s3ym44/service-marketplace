@@ -1,0 +1,213 @@
+@model ServiceMarketplace.ViewModels.CreateListingViewModel
+
+@{
+    ViewData["Title"] = "İlan Oluştur";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="bi bi-plus-circle"></i> Yeni İlan Oluştur</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post" id="listingForm">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="ServiceType" class="form-label"></label>
+                            <select asp-for="ServiceType" class="form-select" id="serviceType">
+                                <option value="Boya">🎨 Boya</option>
+                                <option value="Seramik">🧱 Seramik</option>
+                                <option value="Alçıpan">📐 Alçıpan</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label"></label>
+                            <input asp-for="Title" class="form-control" placeholder="örn: Daire Boyama - 3 Oda">
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label"></label>
+                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Projenizi açıklayın..."></textarea>
+                        </div>
+
+                        <hr>
+                        <h5><i class="bi bi-rulers"></i> Ölçüler</h5>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label asp-for="Area" class="form-label"></label>
+                                <div class="input-group">
+                                    <input asp-for="Area" class="form-control" type="number" step="0.1" id="area">
+                                    <span class="input-group-text">m²</span>
+                                </div>
+                                <span asp-validation-for="Area" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="RoomCount" class="form-label"></label>
+                                <input asp-for="RoomCount" class="form-control" type="number" min="1" id="roomCount">
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="CeilingHeight" class="form-label"></label>
+                                <div class="input-group">
+                                    <input asp-for="CeilingHeight" class="form-control" type="number" step="0.1" id="ceilingHeight">
+                                    <span class="input-group-text">m</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+                        <h5><i class="bi bi-geo-alt"></i> Konum & Zamanlama</h5>
+
+                        <div class="mb-3">
+                            <label asp-for="Location" class="form-label"></label>
+                            <input asp-for="Location" class="form-control" placeholder="örn: İstanbul, Kadıköy">
+                            <span asp-validation-for="Location" class="text-danger"></span>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="StartDate" class="form-label"></label>
+                                <input asp-for="StartDate" class="form-control" type="date">
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Deadline" class="form-label"></label>
+                                <input asp-for="Deadline" class="form-control" type="date">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Budget" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">₺</span>
+                                <input asp-for="Budget" class="form-control" type="number" step="100" placeholder="İsteğe bağlı">
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-send"></i> İlanı Yayınla
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Calculation Panel -->
+        <div class="col-md-5">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header bg-success text-white">
+                    <h5><i class="bi bi-calculator"></i> Tahmini Maliyetler</h5>
+                </div>
+                <div class="card-body" id="calculationResult">
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-arrow-left" style="font-size: 2rem;"></i>
+                        <p>Tahminleri görmek için ölçüleri girin</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        let debounceTimer;
+        
+        function calculateEstimate() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const data = {
+                    serviceType: document.getElementById('serviceType').value,
+                    area: parseFloat(document.getElementById('area').value) || 0,
+                    roomCount: parseInt(document.getElementById('roomCount').value) || 1,
+                    ceilingHeight: parseFloat(document.getElementById('ceilingHeight').value) || 2.8
+                };
+
+                if (data.area <= 0) {
+                    document.getElementById('calculationResult').innerHTML = `
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-info-circle" style="font-size: 2rem;"></i>
+                            <p>Tahminleri görmek için alan girin</p>
+                        </div>`;
+                    return;
+                }
+
+                fetch('/Listings/Calculate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                .then(res => res.json())
+                .then(result => {
+                    if (result.errorMessage) {
+                        document.getElementById('calculationResult').innerHTML = `<div class="alert alert-danger">${result.errorMessage}</div>`;
+                        return;
+                    }
+
+                    let materialsHtml = result.materials.map(m => 
+                        `<li class="list-group-item d-flex justify-content-between">
+                            <span>${m.name}</span>
+                            <span class="badge bg-secondary">${m.quantity} ${m.unit}</span>
+                        </li>`
+                    ).join('');
+
+                    document.getElementById('calculationResult').innerHTML = `
+                        <div class="mb-3">
+                            <label class="text-muted small">Hizmet Türü</label>
+                            <h5>${result.serviceType}</h5>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted small">Efektif Alan</label>
+                            <h5>${result.effectiveArea.toFixed(1)} m²</h5>
+                        </div>
+                        <hr>
+                        <div class="row text-center mb-3">
+                            <div class="col-4">
+                                <div class="border rounded p-2">
+                                    <small class="text-muted">Malzeme</small>
+                                    <h6 class="mb-0 text-success">₺${result.materialCostMin.toLocaleString()} - ₺${result.materialCostMax.toLocaleString()}</h6>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="border rounded p-2">
+                                    <small class="text-muted">İşçilik</small>
+                                    <h6 class="mb-0 text-primary">₺${result.laborCostMin.toLocaleString()} - ₺${result.laborCostMax.toLocaleString()}</h6>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="border rounded p-2">
+                                    <small class="text-muted">Süre</small>
+                                    <h6 class="mb-0 text-warning">${result.estimatedDaysMin}-${result.estimatedDaysMax} gün</h6>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert alert-success text-center">
+                            <strong>Tahmini Toplam</strong><br>
+                            <h4>₺${result.totalCostMin.toLocaleString()} - ₺${result.totalCostMax.toLocaleString()}</h4>
+                        </div>
+                        <hr>
+                        <h6>Gerekli Malzemeler:</h6>
+                        <ul class="list-group list-group-flush">${materialsHtml}</ul>
+                    `;
+                });
+            }, 300);
+        }
+
+        // Attach listeners
+        ['serviceType', 'area', 'roomCount', 'ceilingHeight'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calculateEstimate);
+            document.getElementById(id).addEventListener('change', calculateEstimate);
+        });
+
+        // Initial calculation
+        calculateEstimate();
+    </script>
+}

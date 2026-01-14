@@ -1,0 +1,271 @@
+@model ServiceMarketplace.ViewModels.CompareOffersViewModel
+
+@{
+    ViewData["Title"] = "Teklifleri Karşılaştır";
+}
+
+<style>
+    .best-value {
+        background-color: #d4edda !important;
+        font-weight: bold;
+    }
+    .best-value::after {
+        content: " ★";
+        color: #28a745;
+    }
+    .compare-table th {
+        position: sticky;
+        top: 0;
+        background: #343a40;
+        color: white;
+        z-index: 10;
+    }
+    .offer-header {
+        background: #f8f9fa;
+        font-weight: bold;
+    }
+    .accepted-offer {
+        border: 3px solid #28a745;
+        box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
+    }
+    .rejected-offer {
+        opacity: 0.6;
+    }
+    .row-label {
+        background: #e9ecef;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-grid-3x3-gap"></i> Teklifleri Karşılaştır</h2>
+            <p class="text-muted mb-0">@Model.ListingTitle • @Model.ListingArea m²</p>
+        </div>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Geri
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (!Model.Offers.Any())
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-inbox"></i> Bu ilan için henüz teklif alınmadı.
+        </div>
+    }
+    else
+    {
+        @if (Model.HasAcceptedOffer)
+        {
+            <div class="alert alert-success">
+                <i class="bi bi-check-circle-fill"></i> 
+                <strong>Bir teklif kabul edildi!</strong> Aşağıdaki karşılaştırma son durumu göstermektedir.
+            </div>
+        }
+
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-0 compare-table">
+                        <thead>
+                            <tr>
+                                <th width="150">Kriter</th>
+                                @foreach (var offer in Model.Offers)
+                                {
+                                    <th class="text-center @(offer.Status == "Accepted" ? "table-success" : offer.Status == "Rejected" ? "table-secondary" : "")">
+                                        Teklif #@offer.Id
+                                        <br>
+                                        @{
+                                            var statusText = offer.Status switch
+                                            {
+                                                "Pending" => "Beklemede",
+                                                "Accepted" => "Kabul Edildi",
+                                                "Rejected" => "Reddedildi",
+                                                "Cancelled" => "İptal Edildi",
+                                                _ => offer.Status
+                                            };
+                                        }
+                                        <span class="badge @(offer.Status == "Accepted" ? "bg-success" : offer.Status == "Rejected" ? "bg-danger" : "bg-warning text-dark")">
+                                            @statusText
+                                        </span>
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Supplier -->
+                            <tr>
+                                <td class="row-label"><i class="bi bi-person"></i> Tedarikçi</td>
+                                @foreach (var offer in Model.Offers)
+                                {
+                                    <td class="text-center">@offer.SupplierId</td>
+                                }
+                            </tr>
+
+                            <!-- Total Price -->
+                            <tr>
+                                <td class="row-label"><i class="bi bi-cash-stack"></i> Toplam Fiyat</td>
+                                @foreach (var offer in Model.Offers)
+                                {
+                                    <td class="text-center @(offer.TotalOfferPrice == Model.LowestTotalPrice ? "best-value" : "")">
+                                        ₺@offer.TotalOfferPrice.ToString("N2")
+                                    </td>
+                                }
+                            </tr>
+
+                            <!-- Labor Cost -->
+                            <tr>
+                                <td class="row-label"><i class="bi bi-tools"></i> İşçilik</td>
+                                @foreach (var offer in Model.Offers)
+                                {
+                                    <td class="text-center @(offer.LaborCost == Model.LowestLaborCost ? "best-value" : "")">
+                                        ₺@offer.LaborCost.ToString("N2")
+                                        <br><small class="text-muted">(@(offer.LaborCostType == "Fixed" ? "Sabit" : "m² Başına"))</small>
+                                    </td>
+                                }
+                            </tr>
+
+                            <!-- Material Cost -->
+                            <tr>
+                                <td class="row-label"><i class="bi bi-box-seam"></i> Malzemeler</td>
+                                @foreach (var offer in Model.Offers)
+                                {
+                                    <td class="text-center @(offer.MaterialCostTotal == Model.LowestMaterialCost ? "best-value" : "")">
+                                        ₺@offer.MaterialCostTotal.ToString("N2")
+                                        <br><small class="text-muted">@offer.Materials.Count kalem</small>
+                                    </td>
+                                }
+                            </tr>
+
+                            <!-- Material Breakdown -->
+                            <tr>
+                                <td class="row-label"><i class="bi bi-list-ul"></i> Malzeme Detayları</td>
+                                @foreach (var offer in Model.Offers)
+                                {
+                                    <td>
+                                        @if (offer.Materials.Any())
+                                        {
+                                            <ul class="list-unstyled mb-0 small">
+                                                @foreach (var mat in offer.Materials.Take(3))
+                                                {
+                                                    <li>• @mat.MaterialName (@mat.Brand)</li>
+                                                }
+                                                @if (offer.Materials.Count > 3)
+                                                {
+                                                    <li class="text-muted">+@(offer.Materials.Count - 3) daha fazla...</li>
+                                                }
+                                            </ul>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+
+                            <!-- Estimated Days -->
+                            <tr>
+                                <td class="row-label"><i class="bi bi-calendar3"></i> Süre</td>
+                                @foreach (var offer in Model.Offers)
+                                {
+                                    <td class="text-center @(offer.EstimatedDays == Model.ShortestDays && offer.EstimatedDays > 0 ? "best-value" : "")">
+                                        @offer.EstimatedDays gün
+                                    </td>
+                                }
+                            </tr>
+
+                            <!-- Warranty -->
+                            <tr>
+                                <td class="row-label"><i class="bi bi-shield-check"></i> Garanti</td>
+                                @foreach (var offer in Model.Offers)
+                                {
+                                    <td class="text-center @(offer.WarrantyMonths == Model.LongestWarranty && offer.WarrantyMonths > 0 ? "best-value" : "")">
+                                        @offer.WarrantyMonths ay
+                                    </td>
+                                }
+                            </tr>
+
+                            <!-- Date -->
+                            <tr>
+                                <td class="row-label"><i class="bi bi-clock"></i> Gönderildi</td>
+                                @foreach (var offer in Model.Offers)
+                                {
+                                    <td class="text-center">@offer.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                }
+                            </tr>
+
+                            <!-- Actions -->
+                            <tr>
+                                <td class="row-label"><i class="bi bi-lightning"></i> İşlemler</td>
+                                @foreach (var offer in Model.Offers)
+                                {
+                                    <td class="text-center">
+                                        @if (offer.Status == "Pending" && !Model.HasAcceptedOffer)
+                                        {
+                                            <form asp-action="Accept" asp-route-offerId="@offer.Id" method="post" class="d-inline"
+                                                  onsubmit="return confirm('Bu teklifi kabul etmek istiyor musunuz? Bekleyen diğer teklifler otomatik olarak reddedilecektir.');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-success btn-sm">
+                                                    <i class="bi bi-check-lg"></i> Kabul Et
+                                                </button>
+                                            </form>
+                                        }
+                                        else if (offer.Status == "Accepted")
+                                        {
+                                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> Kabul Edildi</span>
+                                        }
+                                        else
+                                        {
+                                            var offerStatusText = offer.Status switch
+                                            {
+                                                "Pending" => "Beklemede",
+                                                "Rejected" => "Reddedildi",
+                                                "Cancelled" => "İptal Edildi",
+                                                _ => offer.Status
+                                            };
+                                            <span class="badge bg-secondary">@offerStatusText</span>
+                                        }
+
+                                        
+                                        <a asp-controller="Offers" asp-action="Details" asp-route-id="@offer.Id" 
+                                           class="btn btn-outline-info btn-sm ms-1">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-controller="Offers" asp-action="DownloadPdf" asp-route-id="@offer.Id" 
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-file-pdf"></i>
+                                        </a>
+                                    </td>
+                                }
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <small class="text-muted">
+                <span class="best-value px-2">★</span> = Bu kategoride en iyi değer
+            </small>
+        </div>
+    }
+</div>

@@ -1,0 +1,96 @@
+@model List<ServiceMarketplace.Models.Listing>
+
+@{
+    ViewData["Title"] = "İlanlarım";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-list-ul"></i> İlanlarım</h2>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Yeni İlan Oluştur
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center">
+            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+            <h5>Henüz ilan yok</h5>
+            <p>Tedarikçilerden teklif almak için ilk ilanınızı oluşturun.</p>
+            <a asp-action="Create" class="btn btn-primary">İlan Oluştur</a>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var listing in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 @(listing.Status == "Closed" ? "border-secondary opacity-75" : "")">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span class="badge @(listing.ServiceType == "Boya" ? "bg-warning" : listing.ServiceType == "Seramik" ? "bg-info" : "bg-success")">
+                                @listing.ServiceType
+                            </span>
+                            <span class="badge @(listing.Status == "Open" ? "bg-success" : listing.Status == "InProgress" ? "bg-primary" : "bg-secondary")">
+                                @(listing.Status == "Open" ? "Açık" : listing.Status == "InProgress" ? "Devam Ediyor" : "Kapalı")
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">@listing.Title</h5>
+                            <p class="card-text text-muted small">
+                                <i class="bi bi-geo-alt"></i> @listing.Location<br>
+                                <i class="bi bi-rulers"></i> @listing.Area m² • @listing.RoomCount oda
+                            </p>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge bg-secondary">
+                                        <i class="bi bi-envelope"></i> @listing.Offers.Count teklif
+                                    </span>
+                                    @if (listing.Offers.Any())
+                                    {
+                                        <br>
+                                        <small class="text-success">₺@listing.Offers.Min(o => o.TotalOfferPrice).ToString("N0")'den başlayan</small>
+                                    }
+                                </div>
+                                <div>
+                                    <small class="text-muted">@listing.CreatedAt.ToString("dd.MM.yyyy")</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a asp-action="Details" asp-route-id="@listing.Id" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-eye"></i> Detaylar
+                            </a>
+                            @if (listing.Status == "Open" && listing.Offers.Any())
+                            {
+                                <a asp-controller="Customer" asp-action="Offers" asp-route-listingId="@listing.Id" class="btn btn-success btn-sm">
+                                    <i class="bi bi-grid-3x3-gap"></i> Karşılaştır
+                                </a>
+                            }
+                            @if (listing.Status == "Open")
+                            {
+                                <form asp-action="Close" asp-route-id="@listing.Id" method="post" class="d-inline"
+                                      onsubmit="return confirm('Bu ilanı kapatmak istiyor musunuz?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                        <i class="bi bi-x-circle"></i> Kapat
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

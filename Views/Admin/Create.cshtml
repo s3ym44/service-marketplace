@@ -1,0 +1,94 @@
+@model ServiceMarketplace.Models.AdminPriceReference
+
+@{
+    ViewData["Title"] = "Yeni Fiyat Ekle";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="bi bi-plus-circle"></i> Yeni Fiyat Ekle</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Kategori *</label>
+                                <input asp-for="Category" class="form-control" list="categoryList" required>
+                                <datalist id="categoryList">
+                                    @foreach (var cat in ViewBag.Categories as List<string> ?? new List<string>())
+                                    {
+                                        <option value="@cat"></option>
+                                    }
+                                </datalist>
+                                <small class="text-muted">Yeni yazın veya mevcut seçin</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Malzeme Adı *</label>
+                                <input asp-for="MaterialName" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Marka *</label>
+                                <input asp-for="Brand" class="form-control" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Kalite</label>
+                                <select asp-for="Quality" class="form-select">
+                                    <option value="Standart">Standart</option>
+                                    <option value="Premium">Premium</option>
+                                    <option value="Ekonomik">Ekonomik</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Aktif</label>
+                                <div class="form-check form-switch mt-2">
+                                    <input asp-for="IsActive" class="form-check-input" type="checkbox" checked>
+                                    <label class="form-check-label">Aktif</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Miktar *</label>
+                                <input asp-for="Quantity" class="form-control" type="number" step="0.01" value="1" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Birim *</label>
+                                <select asp-for="Unit" class="form-select">
+                                    <option value="Litre">Litre</option>
+                                    <option value="m²">m²</option>
+                                    <option value="m">m (metre)</option>
+                                    <option value="Adet">Adet</option>
+                                    <option value="Kg">Kg</option>
+                                    <option value="Paket">Paket</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Temel Fiyat (₺) *</label>
+                                <input asp-for="BasePrice" class="form-control" type="number" step="0.01" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Bölge Çarpanı</label>
+                                <input asp-for="RegionModifier" class="form-control" type="number" step="0.1" value="1.0">
+                            </div>
+                        </div>
+
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">İptal</a>
+                            <button type="submit" class="btn btn-success">Fiyat Ekle</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

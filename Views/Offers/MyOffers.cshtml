@@ -1,0 +1,92 @@
+@model IEnumerable<ServiceMarketplace.Models.Offer>
+
+@{
+    ViewData["Title"] = "Tekliflerim";
+}
+
+<div class="container mt-4">
+    <h2>Tekliflerim</h2>
+    
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            <p class="mb-0">Henüz teklif göndermediniz. <a asp-action="Create" asp-route-listingId="1">İlk teklifinizi oluşturun</a></p>
+        </div>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>İlan</th>
+                    <th>Durum</th>
+                    <th>İşçilik</th>
+                    <th>Malzeme</th>
+                    <th>Toplam Fiyat</th>
+                    <th>Tarih</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>#@item.ListingId</td>
+                        <td>
+                            @{
+                                var badgeClass = item.Status switch
+                                {
+                                    "Pending" => "bg-warning text-dark",
+                                    "Accepted" => "bg-success",
+                                    "Rejected" => "bg-danger",
+                                    "Cancelled" => "bg-secondary",
+                                    _ => "bg-info"
+                                };
+                                var statusText = item.Status switch
+                                {
+                                    "Pending" => "Beklemede",
+                                    "Accepted" => "Kabul Edildi",
+                                    "Rejected" => "Reddedildi",
+                                    "Cancelled" => "İptal Edildi",
+                                    _ => item.Status
+                                };
+                            }
+                            <span class="badge @badgeClass">@statusText</span>
+                        </td>
+                        <td>@item.LaborCost.ToString("C")</td>
+                        <td>@item.MaterialCostTotal.ToString("C")</td>
+                        <td>@item.TotalOfferPrice.ToString("C")</td>
+                        <td>@item.CreatedAt.ToShortDateString()</td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Detaylar</a>
+                            <a asp-action="DownloadPdf" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">PDF</a>
+                            @if (item.Status == "Pending")
+                            {
+                                <form asp-action="Cancel" asp-route-id="@item.Id" method="post" class="d-inline" 
+                                      onsubmit="return confirm('Bu teklifi iptal etmek istediğinizden emin misiniz?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">İptal</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

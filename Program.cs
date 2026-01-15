@@ -72,19 +72,44 @@ builder.Services.AddSession(options =>
 
 var app = builder.Build();
 
+// Railway dynamic PORT - set early
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+app.Urls.Clear();
+app.Urls.Add($"http://0.0.0.0:{port}");
+
+Console.WriteLine($"=== SERVICE MARKETPLACE STARTUP ===");
+Console.WriteLine($"PORT: {port}");
+Console.WriteLine($"Environment: {app.Environment.EnvironmentName}");
+Console.WriteLine($"DATABASE_URL exists: {!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DATABASE_URL"))}");
+
+// Health check FIRST - before any middleware that might fail
+app.MapWhen(context => context.Request.Path == "/health", appBuilder =>
+{
+    appBuilder.Run(async context =>
+    {
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsync("{\"status\":\"healthy\",\"timestamp\":\"" + DateTime.UtcNow.ToString("o") + "\"}");
+    });
+});
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
+    // HSTS kaldır - Railway handles SSL
 }
 
-// HTTPS redirect kaldır (Railway için)
-// app.UseHttpsRedirection();
+// Forward headers for Railway reverse proxy
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | 
+                       Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+});
+
 app.UseRouting();
 
 app.UseSession();
-app.UseAuthentication(); // Must come before UseAuthorization
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseStaticFiles();
@@ -93,24 +118,5 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// Railway health check
-app.MapGet("/health", () => Results.Ok(new { 
-    status = "healthy", 
-    timestamp = DateTime.UtcNow,
-    environment = app.Environment.EnvironmentName 
-}));
-
-// Root endpoint
-app.MapGet("/", context => 
-{
-    context.Response.Redirect("/Home/Index");
-    return Task.CompletedTask;
-});
-
-// Railway dynamic PORT
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-app.Urls.Clear();
-app.Urls.Add($"http://0.0.0.0:{port}");
-
-Console.WriteLine($"Starting on port {port}...");
+Console.WriteLine("=== Application ready ===");
 app.Run();

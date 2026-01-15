@@ -136,7 +136,17 @@ if (app.Environment.IsProduction())
                 }
                 else
                 {
-                    Console.WriteLine("✓ Database is up to date, no pending migrations.");
+                    // No migrations found - ensure database schema exists
+                    Console.WriteLine("No migrations found. Running EnsureCreated...");
+                    var created = db.Database.EnsureCreated();
+                    if (created)
+                    {
+                        Console.WriteLine("✓ Database schema created successfully!");
+                    }
+                    else
+                    {
+                        Console.WriteLine("✓ Database schema already exists.");
+                    }
                 }
             }
             else

@@ -16,12 +16,11 @@
         <input type="hidden" asp-for="OfferData.MaterialsJson" id="MaterialsJson" />
         
         <input type="hidden" asp-for="OfferData.AdditionalServicesJson" id="AdditionalServicesJson" />
+        
+        <!-- VALIDATION SUMMARY - Outside grid -->
+        <div asp-validation-summary="All" class="alert alert-danger mb-4" role="alert"></div>
+        
         <div class="offer-create-layout">
-            
-            <!-- VALIDATION SUMMARY - Shows all validation errors -->
-            <div class="col-12 mb-3">
-                <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
-            </div>
             
             <!-- LEFT: Listing Details (Read Only) -->
             <div class="offer-section-left">

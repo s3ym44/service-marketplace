@@ -10,25 +10,31 @@ builder.Services.AddControllersWithViews();
 
 // Get connection string from environment variable (Railway) or appsettings
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-string connectionString;
 
 if (!string.IsNullOrEmpty(databaseUrl))
 {
     // Parse Railway PostgreSQL URL format: postgres://user:pass@host:port/database
     var uri = new Uri(databaseUrl);
     var userInfo = uri.UserInfo.Split(':');
-    connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+    var connStr = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
     
-    // IMPORTANT: Also set in Configuration so Identity and other services use the same connection
-    builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
-    Console.WriteLine($"[CONFIG] Using DATABASE_URL: Host={uri.Host}");
+    // Override ALL connection string sources
+    builder.Configuration["ConnectionStrings:DefaultConnection"] = connStr;
+    Environment.SetEnvironmentVariable("DOTNET_ConnectionStrings__DefaultConnection", connStr);
+    
+    Console.WriteLine($"[CONFIG] DATABASE_URL parsed successfully");
+    Console.WriteLine($"[CONFIG] Host: {uri.Host}");
 }
 else
 {
-    connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-        ?? throw new InvalidOperationException("Connection string not found.");
-    Console.WriteLine("[CONFIG] Using appsettings connection string");
+    Console.WriteLine("[CONFIG] WARNING: DATABASE_URL not found, using appsettings");
 }
+
+// Get the final connection string from Configuration
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? throw new InvalidOperationException("Connection string not found.");
+
+Console.WriteLine($"[CONFIG] Final connection string host: {(connectionString.Contains("railway") ? "Railway" : "Local")}");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));

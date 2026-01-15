@@ -8,7 +8,7 @@ namespace ServiceMarketplace.Models
         public string? CompanyName { get; set; } // For suppliers
         public string? PhoneNumber2 { get; set; } // Secondary phone
         public string? Address { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = true;
     }
 }

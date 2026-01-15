@@ -53,7 +53,7 @@ namespace ServiceMarketplace.Controllers
                     FullName = model.FullName,
                     CompanyName = model.CompanyName,
                     PhoneNumber = model.PhoneNumber,
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.UtcNow
                 };
 
                 var result = await _userManager.CreateAsync(user, model.Password);

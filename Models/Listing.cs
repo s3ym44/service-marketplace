@@ -42,7 +42,7 @@ namespace ServiceMarketplace.Models
         [Required]
         public string Status { get; set; } = "Open"; // Open, InProgress, Closed, Cancelled
         
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         
         public DateTime? UpdatedAt { get; set; }
 

@@ -69,7 +69,7 @@ namespace ServiceMarketplace.Controllers
                 Deadline = model.Deadline,
                 Budget = model.Budget,
                 Status = "Open",
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 
                 // Store estimates
                 EstimatedMaterialMin = calc.MaterialCostMin,

@@ -79,7 +79,7 @@ namespace ServiceMarketplace.Controllers
                     WarrantyMonths = OfferData.WarrantyMonths,
                     AdditionalServicesJson = OfferData.AdditionalServicesJson,
                     Status = "Pending",
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.UtcNow
                 };
 
                 // Deserialize materials

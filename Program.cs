@@ -87,12 +87,11 @@ app.UseSession();
 app.UseAuthentication(); // Must come before UseAuthorization
 app.UseAuthorization();
 
-app.MapStaticAssets();
+app.UseStaticFiles();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 // Railway health check
 app.MapGet("/health", () => Results.Ok(new { 
@@ -102,9 +101,10 @@ app.MapGet("/health", () => Results.Ok(new {
 }));
 
 // Root endpoint
-app.MapGet("/", async context => 
+app.MapGet("/", context => 
 {
     context.Response.Redirect("/Home/Index");
+    return Task.CompletedTask;
 });
 
 // Railway dynamic PORT

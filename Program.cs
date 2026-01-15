@@ -79,7 +79,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// HTTPS redirect kaldır (Railway için)
+// app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseSession();
@@ -93,14 +94,23 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+// Railway health check
+app.MapGet("/health", () => Results.Ok(new { 
+    status = "healthy", 
+    timestamp = DateTime.UtcNow,
+    environment = app.Environment.EnvironmentName 
+}));
 
+// Root endpoint
+app.MapGet("/", async context => 
+{
+    context.Response.Redirect("/Home/Index");
+});
+
+// Railway dynamic PORT
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Urls.Clear();
 app.Urls.Add($"http://0.0.0.0:{port}");
 
-Console.WriteLine($"=== RAILWAY PORT CONFIGURATION ===");
-Console.WriteLine($"PORT environment variable: {Environment.GetEnvironmentVariable("PORT")}");
-Console.WriteLine($"Listening on: http://0.0.0.0:{port}");
-Console.WriteLine("==================================");
-
+Console.WriteLine($"Starting on port {port}...");
 app.Run();

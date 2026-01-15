@@ -82,6 +82,74 @@ Console.WriteLine($"PORT: {port}");
 Console.WriteLine($"Environment: {app.Environment.EnvironmentName}");
 Console.WriteLine($"DATABASE_URL exists: {!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DATABASE_URL"))}");
 
+// Force migration in production
+if (app.Environment.IsProduction())
+{
+    Console.WriteLine("=== PRODUCTION ENVIRONMENT DETECTED ===");
+    
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        
+        Console.WriteLine("Database Connection String (masked):");
+        var connStr = db.Database.GetConnectionString();
+        if (connStr != null)
+        {
+            var masked = connStr.Length > 50 ? connStr.Substring(0, 50) + "..." : connStr;
+            Console.WriteLine($"  {masked}");
+        }
+        
+        try
+        {
+            Console.WriteLine("Checking database connection...");
+            var canConnect = db.Database.CanConnect();
+            Console.WriteLine($"Can connect: {canConnect}");
+            
+            if (canConnect)
+            {
+                Console.WriteLine("Getting pending migrations...");
+                var pending = db.Database.GetPendingMigrations().ToList();
+                Console.WriteLine($"Pending migrations count: {pending.Count}");
+                
+                if (pending.Any())
+                {
+                    Console.WriteLine("Pending migrations:");
+                    foreach (var m in pending)
+                    {
+                        Console.WriteLine($"  - {m}");
+                    }
+                    
+                    Console.WriteLine("Applying migrations...");
+                    db.Database.Migrate();
+                    Console.WriteLine("✓ All migrations applied successfully!");
+                }
+                else
+                {
+                    Console.WriteLine("✓ Database is up to date, no pending migrations.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("✗ Cannot connect to database!");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"✗ MIGRATION ERROR: {ex.GetType().Name}");
+            Console.WriteLine($"Message: {ex.Message}");
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"Inner: {ex.InnerException.Message}");
+            }
+            
+            // Production'da migration hatası olsa bile devam et
+            Console.WriteLine("Continuing despite migration error...");
+        }
+    }
+    
+    Console.WriteLine("=== MIGRATION CHECK COMPLETE ===");
+}
+
 // Health check FIRST - before any middleware that might fail
 app.MapWhen(context => context.Request.Path == "/health", appBuilder =>
 {

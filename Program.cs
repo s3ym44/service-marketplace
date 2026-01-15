@@ -94,4 +94,13 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+app.Urls.Clear();
+app.Urls.Add($"http://0.0.0.0:{port}");
+
+Console.WriteLine($"=== RAILWAY PORT CONFIGURATION ===");
+Console.WriteLine($"PORT environment variable: {Environment.GetEnvironmentVariable("PORT")}");
+Console.WriteLine($"Listening on: http://0.0.0.0:{port}");
+Console.WriteLine("==================================");
+
 app.Run();

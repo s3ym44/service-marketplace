@@ -160,11 +160,30 @@ app.MapWhen(context => context.Request.Path == "/health", appBuilder =>
     });
 });
 
+// Global exception handler - log all errors
+app.Use(async (context, next) =>
+{
+    Console.WriteLine($"[REQUEST] {context.Request.Method} {context.Request.Path}");
+    try
+    {
+        await next();
+        Console.WriteLine($"[RESPONSE] {context.Request.Path} => {context.Response.StatusCode}");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[ERROR] {context.Request.Path} => {ex.GetType().Name}: {ex.Message}");
+        if (ex.InnerException != null)
+        {
+            Console.WriteLine($"[INNER] {ex.InnerException.Message}");
+        }
+        throw;
+    }
+});
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // HSTS kaldır - Railway handles SSL
 }
 
 // Forward headers for Railway reverse proxy

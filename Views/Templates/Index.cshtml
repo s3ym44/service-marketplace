@@ -1,0 +1,51 @@
+@model IEnumerable<ServiceMarketplace.Models.ServiceTemplate>
+
+@{
+    ViewData["Title"] = "Hazır Şablonlar";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Hazır Şablonlar</h1>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Yeni Şablon
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["Success"]
+        </div>
+    }
+
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                             <h5 class="card-title">@item.Name</h5>
+                             <span class="badge bg-primary">@item.Items.Count kalem</span>
+                        </div>
+                       
+                        <p class="card-text text-muted">@item.Description</p>
+                        
+                    </div>
+                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between">
+                         <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-pencil"></i> Düzenle
+                        </a>
+                        <form asp-action="Delete" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Bu şablonu silmek istediğinize emin misiniz?');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-trash"></i> Sil
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

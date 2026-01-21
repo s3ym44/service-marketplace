@@ -75,7 +75,38 @@
                     </div>
 
                     <div class="mb-3 p-3 border rounded bg-light">
-                        <h6>Malzeme Ekle</h6>
+                        <div class="d-flex justify-content-between mb-3">
+                            <h6 class="mb-0 align-self-center">Hızlı İşlemler</h6>
+                            <div>
+                                <button type="button" class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#catalogModal">
+                                    <i class="bi bi-search"></i> Katalogdan Ekle
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Template Selector -->
+                        <div class="row g-2 align-items-end mb-3 pb-3 border-bottom">
+                            <div class="col-md-9">
+                                <label class="form-label small text-muted">Şablon Yükle</label>
+                                <select class="form-select form-select-sm" id="templateSelect">
+                                    <option value="">Şablon Seçiniz...</option>
+                                    @if(Model.Templates != null)
+                                    {
+                                        foreach(var temp in Model.Templates)
+                                        {
+                                            <option value="@temp.Id">@temp.Name</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="button" class="btn btn-secondary btn-sm w-100" id="btnLoadTemplate">
+                                    <i class="bi bi-download"></i> Şablonu Uygula
+                                </button>
+                            </div>
+                        </div>
+
+                        <h6>Manuel Malzeme Ekle</h6>
                         <div class="row g-2">
                             <div class="col-md-3">
                                 <select class="form-select form-select-sm" id="materialSourceType">
@@ -101,7 +132,7 @@
                                 </select>
                             </div>
 
-                            <!-- Custom Inputs (Hidden by default, simplified for this demo to show logic) -->
+                            <!-- Custom Inputs -->
                             <div class="col-md-6 d-none" id="customSelector">
                                 <input type="text" id="customMatName" class="form-control form-control-sm mb-1" placeholder="Ad">
                                 <input type="number" id="customMatPrice" class="form-control form-control-sm" placeholder="Fiyat">
@@ -131,7 +162,61 @@
                             <!-- Filled by JS -->
                         </tbody>
                     </table>
+                    <!-- Catalog Modal -->
+    <div class="modal fade" id="catalogModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ürün Kataloğu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" id="catalogSearch" class="form-control" placeholder="Ara: Malzeme adı, kategori veya marka..." />
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Seç</th>
+                                    <th>Kategori</th>
+                                    <th>Malzeme</th>
+                                    <th>Marka/Kalite</th>
+                                    <th>Birim Fiyat</th>
+                                </tr>
+                            </thead>
+                            <tbody id="catalogTableBody">
+                                <!-- Filled by JS -->
+                                @if(Model.AdminMaterials != null) {
+                                    foreach(var item in Model.AdminMaterials) {
+                                        <tr class="catalog-item-row">
+                                            <td>
+                                                <input type="checkbox" class="form-check-input catalog-check" 
+                                                    value="@item.Id"
+                                                    data-name="@item.MaterialName"
+                                                    data-brand="@item.Brand"
+                                                    data-unit="@item.Unit"
+                                                    data-price="@item.BasePrice" />
+                                            </td>
+                                            <td>@item.Category</td>
+                                            <td>@item.MaterialName</td>
+                                            <td>@item.Brand / @item.Quality</td>
+                                            <td>@item.BasePrice ₺</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                    <button type="button" class="btn btn-primary" id="btnAddSelectedCatalog">Seçilenleri Ekle</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
             </div>
 

@@ -7,6 +7,9 @@ using ServiceMarketplace.Models;
 // This is needed because HTML form date inputs don't include timezone information
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
+// QuestPDF License
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.

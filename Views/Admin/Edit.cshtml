@@ -19,18 +19,24 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">Kategori *</label>
-                                <input asp-for="Category" class="form-control" list="categoryList" required>
-                                <datalist id="categoryList">
-                                    @foreach (var cat in ViewBag.Categories as List<string> ?? new List<string>())
+                                <select asp-for="CategoryId" class="form-select">
+                                    <option value="">Seçiniz</option>
+                                    @foreach (var cat in ViewBag.Categories as List<ServiceMarketplace.Models.Category> ?? new List<ServiceMarketplace.Models.Category>())
                                     {
-                                        <option value="@cat"></option>
+                                        <option value="@cat.Id" selected="@(Model.CategoryId == cat.Id ? "selected" : null)">@cat.Name</option>
                                     }
-                                </datalist>
+                                </select>
+                                <input type="hidden" asp-for="Category" /> <!-- Keep current string just in case -->
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Malzeme Adı *</label>
                                 <input asp-for="MaterialName" class="form-control" required>
                             </div>
+                        </div>
+
+                         <div class="mb-3">
+                             <label class="form-label">Açıklama</label>
+                             <textarea asp-for="Description" class="form-control" rows="2"></textarea>
                         </div>
 
                         <div class="row mb-3">

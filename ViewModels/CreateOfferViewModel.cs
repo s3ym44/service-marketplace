@@ -12,6 +12,7 @@ namespace ServiceMarketplace.ViewModels
         public ListingCalculation Calculation { get; set; }
 
         public List<AdminPriceReference> AdminMaterials { get; set; } = new List<AdminPriceReference>();
+        public List<ServiceTemplate> Templates { get; set; } = new List<ServiceTemplate>();
 
         public CreateOfferDto OfferData { get; set; } = new CreateOfferDto();
     }

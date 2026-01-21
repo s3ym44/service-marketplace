@@ -36,6 +36,7 @@ namespace ServiceMarketplace.Controllers
             };
 
             var adminMaterials = _context.AdminPriceReferences.Where(a => a.IsActive).ToList();
+            var templates = _context.ServiceTemplates.Where(t => t.IsActive).ToList();
 
             var viewModel = new CreateOfferViewModel
             {
@@ -43,7 +44,8 @@ namespace ServiceMarketplace.Controllers
                 ListingTitle = "Sample Listing " + listingId,
                 ListingArea = 120, // m2 mock
                 Calculation = calculation,
-                AdminMaterials = adminMaterials
+                AdminMaterials = adminMaterials,
+                Templates = templates
             };
 
             return View(viewModel);
@@ -57,16 +59,19 @@ namespace ServiceMarketplace.Controllers
             {
                 // Re-populate and return view
                  var adminMaterials = _context.AdminPriceReferences.Where(a => a.IsActive).ToList();
+                 var templates = _context.ServiceTemplates.Where(t => t.IsActive).ToList();
                  var viewModel = new CreateOfferViewModel
                  {
                      ListingId = OfferData.ListingId,
                      Calculation = new ListingCalculation(), // Re-fetch
                      AdminMaterials = adminMaterials,
+                     Templates = templates,
                      OfferData = OfferData
                  };
                 return View(viewModel);
             }
 
+            // ... (Rest of existing Create POST logic until end of method)
             try
             {
                 var offer = new Offer
@@ -153,10 +158,35 @@ namespace ServiceMarketplace.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("", "Error saving offer: " + ex.Message);
-                return View(new CreateOfferViewModel { OfferData = OfferData, AdminMaterials = new List<AdminPriceReference>() });
+                var adminMaterials = _context.AdminPriceReferences.Where(a => a.IsActive).ToList();
+                var templates = _context.ServiceTemplates.Where(t => t.IsActive).ToList();
+                return View(new CreateOfferViewModel { OfferData = OfferData, AdminMaterials = adminMaterials, Templates = templates });
             }
         }
 
+        // ... (Existing actions)
+
+        [HttpGet]
+        public IActionResult GetTemplateItems(int templateId)
+        {
+            var items = _context.ServiceTemplateItems
+                .Include(i => i.Product)
+                .Where(i => i.ServiceTemplateId == templateId)
+                .Select(i => new {
+                     name = i.Product.MaterialName,
+                     brand = i.Product.Brand,
+                     quantity = i.Quantity,
+                     unit = i.Product.Unit,
+                     unitPrice = i.Product.BasePrice,
+                     source = "AdminStock",
+                     adminPriceId = i.Product.Id,
+                     note = i.DefaultNote
+                })
+                .ToList();
+            return Json(items);
+        }
+
+        // ... (Existing GetAdminPrices, DownloadPdf, etc)
         public IActionResult MyOffers()
         {
             // Şimdilik tüm teklifler - Identity yapılandırıldığında User.Identity.Name ile filtrelenecek

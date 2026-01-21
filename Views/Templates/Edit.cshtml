@@ -1,0 +1,135 @@
+@model ServiceMarketplace.Models.ServiceTemplate
+
+@{
+    ViewData["Title"] = "Şablon Düzenle";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Şablonlar</a></li>
+            <li class="breadcrumb-item active">@Model.Name</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Left Column: Template Details -->
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Şablon Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">Ad</label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Açıklama</label>
+                            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input asp-for="IsActive" class="form-check-input" />
+                            <label asp-for="IsActive" class="form-check-label">Aktif</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Güncelle</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Yeni Kalem Ekle</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="AddItem">
+                        <input type="hidden" name="serviceTemplateId" value="@Model.Id" />
+                        <div class="mb-3">
+                            <label class="form-label">Ürün/Hizmet Seç</label>
+                            <select name="adminPriceReferenceId" class="form-select" required>
+                                <option value="">Seçiniz</option>
+                                @foreach (var item in ViewBag.Products as dynamic)
+                                {
+                                    <option value="@item.Id">@item.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Miktar</label>
+                            <input type="number" name="quantity" class="form-control" value="1" step="0.01" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Varsayılan Not</label>
+                            <input type="text" name="defaultNote" class="form-control" placeholder="Örn: Mutfak için" />
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-plus-lg"></i> Kalem Ekle
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Items List -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Şablon İçeriği (@Model.Items.Count kalem)</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Ürün</th>
+                                <th>Kategori</th>
+                                <th class="text-center">Miktar</th>
+                                <th>Birim</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Items.Any())
+                            {
+                                foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td>
+                                            @item.Product.MaterialName
+                                            <br />
+                                            <small class="text-muted">@item.Product.Brand - @item.Product.Quality</small>
+                                            @if(!string.IsNullOrEmpty(item.DefaultNote)) {
+                                                <br /><small class="text-info"><i class="bi bi-info-circle"></i> @item.DefaultNote</small>
+                                            }
+                                        </td>
+                                        <td><span class="badge bg-secondary">@item.Product.Category</span></td>
+                                        <td class="text-center fw-bold">@item.Quantity</td>
+                                        <td>@item.Product.Unit</td>
+                                        <td>
+                                            <form asp-action="DeleteItem" asp-route-id="@item.Id" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Sil">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">
+                                        Henüz kalem eklenmemiş. Soldaki formu kullanarak ekleyebilirsiniz.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

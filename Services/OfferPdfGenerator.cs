@@ -9,9 +9,6 @@ namespace ServiceMarketplace.Services
     {
         public byte[] GeneratePdf(Offer offer)
         {
-            // QuestPDF Community License
-            QuestPDF.Settings.License = LicenseType.Community;
-
             var document = Document.Create(container =>
             {
                 container.Page(page =>

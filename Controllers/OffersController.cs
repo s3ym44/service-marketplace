@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ServiceMarketplace.Data;
@@ -8,14 +9,16 @@ using System.Text.Json;
 
 namespace ServiceMarketplace.Controllers
 {
-    [Authorize(Roles = "Supplier")]
+    [Authorize(Roles = "MaterialSupplier,LaborProvider")]
     public class OffersController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public OffersController(ApplicationDbContext context)
+        public OffersController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Offers/Create/5
@@ -74,10 +77,28 @@ namespace ServiceMarketplace.Controllers
             // ... (Rest of existing Create POST logic until end of method)
             try
             {
+                // Determine OfferType based on user role
+                var currentUser = await _userManager.GetUserAsync(User);
+                var offerType = OfferTypes.Material; // Default
+                
+                if (currentUser != null)
+                {
+                    var roles = await _userManager.GetRolesAsync(currentUser);
+                    if (roles.Contains(Roles.LaborProvider))
+                    {
+                        offerType = OfferTypes.Labor;
+                    }
+                    else if (roles.Contains(Roles.MaterialSupplier))
+                    {
+                        offerType = OfferTypes.Material;
+                    }
+                }
+
                 var offer = new Offer
                 {
                     ListingId = OfferData.ListingId,
-                    SupplierId = GetCurrentUserId(),
+                    UserId = GetCurrentUserId(),
+                    OfferType = offerType, // Auto-set based on user role
                     LaborCost = OfferData.LaborCost,
                     LaborCostType = OfferData.LaborCostType,
                     EstimatedDays = OfferData.EstimatedDays,
@@ -187,15 +208,16 @@ namespace ServiceMarketplace.Controllers
         }
 
         // ... (Existing GetAdminPrices, DownloadPdf, etc)
-        public IActionResult MyOffers()
+        public async Task<IActionResult> MyOffers()
         {
             // Şimdilik tüm teklifler - Identity yapılandırıldığında User.Identity.Name ile filtrelenecek
             var currentUserId = GetCurrentUserId();
-            var offers = _context.Offers
+            var offers = await _context.Offers
                 .Include(o => o.Materials)
-                .Where(o => o.SupplierId == currentUserId)
+                .Include(o => o.Listing) // Added this line based on the provided snippet
+                .Where(o => o.UserId == currentUserId)
                 .OrderByDescending(o => o.CreatedAt)
-                .ToList();
+                .ToListAsync(); // Changed ToList() to ToListAsync()
             return View(offers);
         }
 
@@ -210,8 +232,10 @@ namespace ServiceMarketplace.Controllers
             
             // Sadece kendi teklifini iptal edebilir
             var currentUserId = GetCurrentUserId();
-            if (offer.SupplierId != currentUserId)
-                return Forbid();
+            // Ensure the supplier owns this offer
+            if (offer.UserId != currentUserId)
+            {    return Forbid();
+            }
             
             // Sadece Pending durumundaki teklifler iptal edilebilir
             if (offer.Status != "Pending")

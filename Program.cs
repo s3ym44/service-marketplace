@@ -73,10 +73,11 @@ builder.Services.ConfigureApplicationCookie(options => {
 
 // Authorization policies
 builder.Services.AddAuthorization(options => {
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("SupplierOnly", policy => policy.RequireRole("Supplier"));
-    options.AddPolicy("CustomerOnly", policy => policy.RequireRole("Customer"));
-    options.AddPolicy("SupplierOrAdmin", policy => policy.RequireRole("Supplier", "Admin"));
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole(Roles.Admin));
+    options.AddPolicy("MaterialSupplierOnly", policy => policy.RequireRole(Roles.MaterialSupplier));
+    options.AddPolicy("LaborProviderOnly", policy => policy.RequireRole(Roles.LaborProvider));
+    options.AddPolicy("CustomerOnly", policy => policy.RequireRole(Roles.Customer));
+    options.AddPolicy("SupplierOrAdmin", policy => policy.RequireRole(Roles.MaterialSupplier, Roles.LaborProvider, Roles.Admin));
 });
 
 // Session support (kept for backward compatibility)
@@ -172,6 +173,32 @@ if (app.Environment.IsProduction())
             
             // Production'da migration hatası olsa bile devam et
             Console.WriteLine("Continuing despite migration error...");
+        }
+    }
+    
+    // Seed Roles and Default Admin
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        try
+        {
+            Console.WriteLine("Seeding roles...");
+            await ServiceMarketplace.Services.RoleSeeder.SeedRolesAsync(services);
+            Console.WriteLine("✓ Roles seeded successfully!");
+            
+            Console.WriteLine("Seeding default admin...");
+            await ServiceMarketplace.Services.RoleSeeder.SeedDefaultAdminAsync(services);
+            Console.WriteLine("✓ Default admin created/verified!");
+            
+            // Seed Catalog Data
+            var dbContext = services.GetRequiredService<ApplicationDbContext>();
+            Console.WriteLine("Seeding catalog data...");
+            await ServiceMarketplace.Services.CatalogSeeder.SeedAllCatalogDataAsync(dbContext);
+            Console.WriteLine("✓ Catalog data seeded successfully!");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"✗ SEEDING ERROR: {ex.Message}");
         }
     }
     

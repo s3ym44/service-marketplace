@@ -27,10 +27,22 @@ namespace ServiceMarketplace.ViewModels
 
         [Required(ErrorMessage = "Please select a role")]
         [Display(Name = "Register as")]
-        public string Role { get; set; } = "Customer"; // Customer, Supplier
+        public string Role { get; set; } = "Customer"; // Customer, MaterialSupplier, LaborProvider
 
+        // For MaterialSupplier and LaborProvider
         [Display(Name = "Company Name")]
-        public string? CompanyName { get; set; } // Required for Suppliers
+        public string? CompanyName { get; set; }
+        
+        // For MaterialSupplier
+        [Display(Name = "Tax Number")]
+        public string? TaxNumber { get; set; }
+        
+        // For LaborProvider
+        [Display(Name = "License Number")]
+        public string? LicenseNumber { get; set; }
+        
+        [Display(Name = "Specialties (comma separated)")]
+        public string? Specialties { get; set; } // e.g., "Alçıpan, Elektrik, Boya"
 
         [Phone]
         [Display(Name = "Phone Number")]

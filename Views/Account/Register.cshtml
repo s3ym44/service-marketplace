@@ -46,7 +46,8 @@
                             <label asp-for="Role" class="form-label"></label>
                             <select asp-for="Role" class="form-select" id="roleSelect">
                                 <option value="Customer">Müşteri - Hizmet almak istiyorum</option>
-                                <option value="Supplier">Tedarikçi - Hizmet veriyorum</option>
+                                <option value="MaterialSupplier">Malzeme Satıcısı - Malzeme tedarik ediyorum</option>
+                                <option value="LaborProvider">Usta - İşçilik hizmeti veriyorum</option>
                             </select>
                             <span asp-validation-for="Role" class="text-danger"></span>
                         </div>
@@ -55,6 +56,25 @@
                             <label asp-for="CompanyName" class="form-label"></label>
                             <input asp-for="CompanyName" class="form-control" placeholder="Şirket/işletme adınız">
                             <span asp-validation-for="CompanyName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3" id="taxSection" style="display: none;">
+                            <label asp-for="TaxNumber" class="form-label"></label>
+                            <input asp-for="TaxNumber" class="form-control" placeholder="Vergi numaranız">
+                            <span asp-validation-for="TaxNumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3" id="licenseSection" style="display: none;">
+                            <label asp-for="LicenseNumber" class="form-label"></label>
+                            <input asp-for="LicenseNumber" class="form-control" placeholder="İş belgesi numaranız">
+                            <span asp-validation-for="LicenseNumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3" id="specialtiesSection" style="display: none;">
+                            <label asp-for="Specialties" class="form-label"></label>
+                            <input asp-for="Specialties" class="form-control" placeholder="Örn: Alçıpan, Elektrik, Boya">
+                            <small class="form-text text-muted">Uzmanlık alanlarınızı virgülle ayırarak yazın</small>
+                            <span asp-validation-for="Specialties" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
@@ -81,17 +101,32 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        document.getElementById('roleSelect').addEventListener('change', function() {
+        function updateFieldsBasedOnRole() {
+            var role = document.getElementById('roleSelect').value;
             var companySection = document.getElementById('companySection');
-            if (this.value === 'Supplier') {
+            var taxSection = document.getElementById('taxSection');
+            var licenseSection = document.getElementById('licenseSection');
+            var specialtiesSection = document.getElementById('specialtiesSection');
+            
+            // Hide all conditional sections first
+            companySection.style.display = 'none';
+            taxSection.style.display = 'none';
+            licenseSection.style.display = 'none';
+            specialtiesSection.style.display = 'none';
+            
+            if (role === 'MaterialSupplier') {
                 companySection.style.display = 'block';
-            } else {
-                companySection.style.display = 'none';
+                taxSection.style.display = 'block';
+            } else if (role === 'LaborProvider') {
+                companySection.style.display = 'block';
+                licenseSection.style.display = 'block';
+                specialtiesSection.style.display = 'block';
             }
-        });
-        // Initial check
-        if (document.getElementById('roleSelect').value === 'Supplier') {
-            document.getElementById('companySection').style.display = 'block';
         }
+        
+        document.getElementById('roleSelect').addEventListener('change', updateFieldsBasedOnRole);
+        
+        // Initial check on page load
+        updateFieldsBasedOnRole();
     </script>
 }

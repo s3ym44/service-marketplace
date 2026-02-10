@@ -20,6 +20,14 @@ namespace ServiceMarketplace.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<ServiceTemplate> ServiceTemplates { get; set; }
         public DbSet<ServiceTemplateItem> ServiceTemplateItems { get; set; }
+        
+        // Catalog-based models
+        public DbSet<MainCategory> MainCategories { get; set; }
+        public DbSet<RecipeTemplate> RecipeTemplates { get; set; }
+        public DbSet<RecipeItem> RecipeItems { get; set; }
+        public DbSet<SupplierCatalog> SupplierCatalogs { get; set; }
+        public DbSet<LaborCatalog> LaborCatalogs { get; set; }
+        public DbSet<OfferItem> OfferItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

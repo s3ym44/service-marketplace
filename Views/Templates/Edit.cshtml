@@ -13,41 +13,88 @@
         </ol>
     </nav>
 
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     <div class="row">
         <!-- Left Column: Template Details -->
         <div class="col-md-4">
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0">Şablon Bilgileri</h5>
+                    <h5 class="mb-0"><i class="bi bi-file-text"></i> Şablon Bilgileri</h5>
                 </div>
                 <div class="card-body">
                     <form asp-action="Edit">
                         <input type="hidden" asp-for="Id" />
                         <div class="mb-3">
-                            <label asp-for="Name" class="form-label">Ad</label>
+                            <label asp-for="Name" class="form-label">Şablon Adı</label>
                             <input asp-for="Name" class="form-control" />
                             <span asp-validation-for="Name" class="text-danger"></span>
                         </div>
                         <div class="mb-3">
+                            <label asp-for="RenovationType" class="form-label">Ana Kategori</label>
+                            <select asp-for="RenovationType" class="form-select">
+                                <option value="">-- Seçiniz --</option>
+                                <option value="Mutfak">Mutfak</option>
+                                <option value="Banyo">Banyo</option>
+                                <option value="Salon">Salon</option>
+                                <option value="Yatak Odası">Yatak Odası</option>
+                                <option value="Ofis">Ofis</option>
+                                <option value="Bina Dışı">Bina Dışı</option>
+                                <option value="Genel">Genel</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
                             <label asp-for="Description" class="form-label">Açıklama</label>
-                            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
                         </div>
                         <div class="mb-3 form-check">
                             <input asp-for="IsActive" class="form-check-input" />
                             <label asp-for="IsActive" class="form-check-label">Aktif</label>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Güncelle</button>
-                    </form>
+                        
+                        <div class="alert alert-info small mb-3">
+                            <strong>Toplam:</strong> @Model.TotalItems kalem<br />
+                            <strong>Tahmini Maliyet:</strong> ₺@Model.EstimatedCost.ToString("N2")
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-save"></i> Güncelle
+                        </button>
+</form>
                 </div>
             </div>
 
             <div class="card shadow-sm">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0">Yeni Kalem Ekle</h5>
+                    <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Yeni Kalem Ekle</h5>
                 </div>
                 <div class="card-body">
                     <form asp-action="AddItem">
                         <input type="hidden" name="serviceTemplateId" value="@Model.Id" />
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Alt Kategori</label>
+                            <select name="subCategory" class="form-select" id="subCategorySelect">
+                                <option value="">-- Seçiniz --</option>
+                                <option value="Alçıpan">Alçıpan</option>
+                                <option value="Elektrik">Elektrik</option>
+                                <option value="Sıhhi Tesisat">Sıhhi Tesisat</option>
+                                <option value="Boya">Boya</option>
+                                <option value="Mutfak Mobilyası">Mutfak Mobilyası</option>
+                                <option value="Zemin Kaplama">Zemin Kaplama</option>
+                                <option value="Duvar Kaplama">Duvar Kaplama</option>
+                                <option value="Pencere ve Kapı">Pencere ve Kapı</option>
+                                <option value="Isıtma ve Soğutma">Isıtma ve Soğutma</option>
+                                <option value="Diğer İşler">Diğer İşler</option>
+                            </select>
+                        </div>
+
                         <div class="mb-3">
                             <label class="form-label">Ürün/Hizmet Seç</label>
                             <select name="adminPriceReferenceId" class="form-select" required>
@@ -58,14 +105,22 @@
                                 }
                             </select>
                         </div>
+                        
                         <div class="mb-3">
                             <label class="form-label">Miktar</label>
                             <input type="number" name="quantity" class="form-control" value="1" step="0.01" required />
                         </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Notlar</label>
+                            <input type="text" name="notes" class="form-control" placeholder="Ürün açıklaması" />
+                        </div>
+                        
                         <div class="mb-3">
                             <label class="form-label">Varsayılan Not</label>
                             <input type="text" name="defaultNote" class="form-control" placeholder="Örn: Mutfak için" />
                         </div>
+                        
                         <button type="submit" class="btn btn-success w-100">
                             <i class="bi bi-plus-lg"></i> Kalem Ekle
                         </button>
@@ -79,57 +134,120 @@
             <div class="card shadow-sm">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Şablon İçeriği (@Model.Items.Count kalem)</h5>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-secondary" id="groupByCategory">
+                            <i class="bi bi-folder"></i> Gruplara Ayır
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="showAll">
+                            <i class="bi bi-list"></i> Hepsini Göster
+                        </button>
+                    </div>
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Ürün</th>
-                                <th>Kategori</th>
-                                <th class="text-center">Miktar</th>
-                                <th>Birim</th>
-                                <th>İşlemler</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (Model.Items.Any())
+                
+                <div class="card-body p-0">
+                    @if (Model.Items.Any())
+                    {
+                        var groupedItems = Model.Items
+                            .OrderBy(i => i.DisplayOrder)
+                            .GroupBy(i => string.IsNullOrEmpty(i.SubCategory) ? "Kategorisiz" : i.SubCategory);
+
+                        <div id="groupedView">
+                            @foreach (var group in groupedItems)
                             {
-                                foreach (var item in Model.Items)
-                                {
-                                    <tr>
-                                        <td>
-                                            @item.Product.MaterialName
-                                            <br />
-                                            <small class="text-muted">@item.Product.Brand - @item.Product.Quality</small>
-                                            @if(!string.IsNullOrEmpty(item.DefaultNote)) {
-                                                <br /><small class="text-info"><i class="bi bi-info-circle"></i> @item.DefaultNote</small>
-                                            }
-                                        </td>
-                                        <td><span class="badge bg-secondary">@item.Product.Category</span></td>
-                                        <td class="text-center fw-bold">@item.Quantity</td>
-                                        <td>@item.Product.Unit</td>
-                                        <td>
-                                            <form asp-action="DeleteItem" asp-route-id="@item.Id" method="post" class="d-inline">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Sil">
-                                                    <i class="bi bi-x-lg"></i>
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                }
+                                <div class="subcategory-group">
+                                    <div class="subcategory-header p-3 bg-light border-bottom">
+                                        <h6 class="mb-0">
+                                            <i class="bi bi-folder2-open"></i> @group.Key
+                                            <span class="badge bg-secondary ms-2">@group.Count() kalem</span>
+                                        </h6>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th width="5%">#</th>
+                                                    <th width="40%">Ürün</th>
+                                                    <th width="15%" class="text-center">Miktar</th>
+                                                    <th width="10%">Birim</th>
+                                                    <th width="20%" class="text-end">Fiyat</th>
+                                                    <th width="10%">İşlem</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var item in group)
+                                                {
+                                                    <tr>
+                                                        <td class="text-muted">@item.DisplayOrder</td>
+                                                        <td>
+                                                            <strong>@(item.Product?.MaterialName ?? item.Notes ?? "N/A")</strong>
+                                                            @if (item.Product != null)
+                                                            {
+                                                                <br />
+                                                                <small class="text-muted">
+                                                                    @item.Product.Brand - @item.Product.Quality
+                                                                </small>
+                                                            }
+                                                            @if(!string.IsNullOrEmpty(item.Notes) && item.Product != null) 
+                                                            {
+                                                                <br /><small class="text-primary"><i class="bi bi-info-circle"></i> @item.Notes</small>
+                                                            }
+                                                            @if(!string.IsNullOrEmpty(item.DefaultNote)) 
+                                                            {
+                                                                <br /><small class="text-success"><i class="bi bi-pencil"></i> @item.DefaultNote</small>
+                                                            }
+                                                        </td>
+                                                        <td class="text-center fw-bold">@item.Quantity</td>
+                                                        <td>@(item.Product?.Unit ?? "adet")</td>
+                                                        <td class="text-end">
+                                                            @if (item.Product != null)
+                                                            {
+                                                                var total = item.Quantity * item.Product.BasePrice;
+                                                                <span>₺@total.ToString("N2")</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="text-muted">-</span>
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            <form asp-action="DeleteItem" asp-route-id="@item.Id" method="post" class="d-inline">
+                                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                                        onclick="return confirm('Bu kalemi silmek istediğinize emin misiniz?');">
+                                                                    <i class="bi bi-trash"></i>
+                                                                </button>
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             }
-                            else
-                            {
-                                <tr>
-                                    <td colspan="5" class="text-center py-4 text-muted">
-                                        Henüz kalem eklenmemiş. Soldaki formu kullanarak ekleyebilirsiniz.
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                            <p class="mt-3">Henüz kalem eklenmemiş. Soldaki formu kullanarak ekleyebilirsiniz.</p>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Simple toggle between grouped and flat view (optional enhancement)
+        document.getElementById('groupByCategory')?.addEventListener('click', function() {
+            document.querySelectorAll('.subcategory-header').forEach(el => el.style.display = 'block');
+        });
+        
+        document.getElementById('showAll')?.addEventListener('click', function() {
+            document.querySelectorAll('.subcategory-header').forEach(el => el.style.display = 'none');
+        });
+    </script>
+}

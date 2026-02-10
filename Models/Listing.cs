@@ -11,6 +11,24 @@ namespace ServiceMarketplace.Models
         [Required]
         public string UserId { get; set; } = string.Empty; // Customer who created
         
+        // YENİ: Ana kategori ve reçete ilişkisi
+        [Required]
+        public int MainCategoryId { get; set; }
+        public virtual MainCategory MainCategory { get; set; }
+        
+        [Required]
+        public int RecipeTemplateId { get; set; }
+        public virtual RecipeTemplate RecipeTemplate { get; set; }
+        
+        // DEPRECATED: Artık RecipeTemplate kullanılacak
+        [Obsolete("Use RecipeTemplateId instead")]
+        public int? ServiceTemplateId { get; set; }
+        public virtual ServiceTemplate? Template { get; set; }
+        
+        // DEPRECATED: Artık MainCategory.Name kullanılacak
+        [Obsolete("Use MainCategory.Name instead")]
+        public string? RenovationType { get; set; } // "Mutfak", "Banyo", "Salon", "Yatak Odası"
+        
         [Required]
         public string ServiceType { get; set; } = string.Empty; // Boya, Seramik, Alçıpan
         

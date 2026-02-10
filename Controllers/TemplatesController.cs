@@ -17,12 +17,27 @@ namespace ServiceMarketplace.Controllers
         }
 
         // GET: Templates
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string renovationType = null)
         {
-            return View(await _context.ServiceTemplates
+            var query = _context.ServiceTemplates
                 .Include(t => t.Items)
-                .OrderBy(t => t.Name)
-                .ToListAsync());
+                .ThenInclude(i => i.Product)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(renovationType))
+            {
+                query = query.Where(t => t.RenovationType == renovationType);
+            }
+
+            ViewBag.SelectedRenovationType = renovationType;
+            ViewBag.RenovationTypes = await _context.ServiceTemplates
+                .Where(t => !string.IsNullOrEmpty(t.RenovationType))
+                .Select(t => t.RenovationType)
+                .Distinct()
+                .OrderBy(r => r)
+                .ToListAsync();
+
+            return View(await query.OrderBy(t => t.Name).ToListAsync());
         }
 
         // GET: Templates/Create
@@ -115,16 +130,25 @@ namespace ServiceMarketplace.Controllers
         // POST: Templates/AddItem
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddItem(int serviceTemplateId, int adminPriceReferenceId, decimal quantity, string defaultNote)
+        public async Task<IActionResult> AddItem(int serviceTemplateId, int adminPriceReferenceId, decimal quantity, string subCategory, string notes, string defaultNote)
         {
             var template = await _context.ServiceTemplates.FindAsync(serviceTemplateId);
             if (template == null) return NotFound();
+
+            // Get the next display order
+            var maxOrder = await _context.ServiceTemplateItems
+                .Where(i => i.ServiceTemplateId == serviceTemplateId)
+                .Select(i => (int?)i.DisplayOrder)
+                .MaxAsync() ?? 0;
 
             var item = new ServiceTemplateItem
             {
                 ServiceTemplateId = serviceTemplateId,
                 AdminPriceReferenceId = adminPriceReferenceId,
                 Quantity = quantity,
+                SubCategory = subCategory,
+                DisplayOrder = maxOrder + 1,
+                Notes = notes,
                 DefaultNote = defaultNote
             };
 

@@ -20,19 +20,84 @@
         </div>
     }
 
+    <!-- Renovation Type Filter Tabs -->
+    @if (ViewBag.RenovationTypes != null && ViewBag.RenovationTypes.Count > 0)
+    {
+        <ul class="nav nav-pills mb-4">
+            <li class="nav-item">
+                <a class="nav-link @(string.IsNullOrEmpty(ViewBag.SelectedRenovationType) ? "active" : "")" 
+                   asp-action="Index">
+                    Tümü
+                </a>
+            </li>
+            @foreach (var renovationType in ViewBag.RenovationTypes)
+            {
+                <li class="nav-item">
+                    <a class="nav-link @(ViewBag.SelectedRenovationType == renovationType ? "active" : "")" 
+                       asp-action="Index" 
+                       asp-route-renovationType="@renovationType">
+                        @renovationType
+                    </a>
+                </li>
+            }
+        </ul>
+    }
+
     <div class="row">
         @foreach (var item in Model)
         {
-            <div class="col-md-4 mb-4">
+            <div class="col-md-6 col-lg-4 mb-4">
                 <div class="card h-100 shadow-sm">
                     <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                             <h5 class="card-title">@item.Name</h5>
-                             <span class="badge bg-primary">@item.Items.Count kalem</span>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                             <h5 class="card-title mb-0">@item.Name</h5>
+                             @if (!string.IsNullOrEmpty(item.RenovationType))
+                             {
+                                 <span class="badge bg-info">@item.RenovationType</span>
+                             }
                         </div>
                        
-                        <p class="card-text text-muted">@item.Description</p>
+                        <p class="card-text text-muted small">@item.Description</p>
                         
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between text-sm mb-1">
+                                <span class="text-muted"><i class="bi bi-list-ul"></i> Toplam Kalem:</span>
+                                <strong>@item.TotalItems</strong>
+                            </div>
+                            @if (item.EstimatedCost > 0)
+                            {
+                                <div class="d-flex justify-content-between text-sm">
+                                    <span class="text-muted"><i class="bi bi-currency-dollar"></i> Tahmini Maliyet:</span>
+                                    <strong>₺@item.EstimatedCost.ToString("N2")</strong>
+                                </div>
+                            }
+                        </div>
+
+                        @if (item.Items.Any())
+                        {
+                            var subCategories = item.Items
+                                .Where(i => !string.IsNullOrEmpty(i.SubCategory))
+                                .Select(i => i.SubCategory)
+                                .Distinct()
+                                .ToList();
+                            
+                            @if (subCategories.Any())
+                            {
+                                <div class="mt-3">
+                                    <small class="text-muted d-block mb-1">Alt Kategoriler:</small>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        @foreach (var subCat in subCategories.Take(5))
+                                        {
+                                            <span class="badge bg-secondary small">@subCat</span>
+                                        }
+                                        @if (subCategories.Count > 5)
+                                        {
+                                            <span class="badge bg-secondary small">+@(subCategories.Count - 5) daha</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        }
                     </div>
                     <div class="card-footer bg-white border-top-0 d-flex justify-content-between">
                          <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm">
@@ -48,4 +113,11 @@
             </div>
         }
     </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center">
+            <i class="bi bi-info-circle"></i> Henüz şablon bulunmamaktadır. Yeni bir şablon oluşturmak için yukarıdaki butona tıklayın.
+        </div>
+    }
 </div>

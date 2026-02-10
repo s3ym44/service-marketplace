@@ -39,10 +39,16 @@ namespace ServiceMarketplace.Controllers
 
             if (ModelState.IsValid)
             {
-                // Validate supplier must have company name
-                if (model.Role == "Supplier" && string.IsNullOrEmpty(model.CompanyName))
+                // Validate required fields based on role
+                if (model.Role == Roles.MaterialSupplier && string.IsNullOrEmpty(model.CompanyName))
                 {
-                    ModelState.AddModelError("CompanyName", "Company name is required for suppliers");
+                    ModelState.AddModelError("CompanyName", "Company name is required for material suppliers");
+                    return View(model);
+                }
+                
+                if (model.Role == Roles.LaborProvider && string.IsNullOrEmpty(model.CompanyName))
+                {
+                    ModelState.AddModelError("CompanyName", "Company/business name is required for labor providers");
                     return View(model);
                 }
 
@@ -50,10 +56,15 @@ namespace ServiceMarketplace.Controllers
                 {
                     UserName = model.Email,
                     Email = model.Email,
-                    FullName = model.FullName,
+                    FirstName = model.FullName.Split(' ').FirstOrDefault() ?? model.FullName,
+                    LastName = string.Join(" ", model.FullName.Split(' ').Skip(1)),
                     CompanyName = model.CompanyName,
+                    TaxNumber = model.TaxNumber,
+                    LicenseNumber = model.LicenseNumber,
+                    Specialties = model.Specialties,
                     PhoneNumber = model.PhoneNumber,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    IsActive = true
                 };
 
                 var result = await _userManager.CreateAsync(user, model.Password);

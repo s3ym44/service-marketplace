@@ -11,14 +11,12 @@ namespace ServiceMarketplace.Models
         [Required]
         public string UserId { get; set; } = string.Empty; // Customer who created
         
-        // YENİ: Ana kategori ve reçete ilişkisi
-        [Required]
-        public int MainCategoryId { get; set; }
-        public virtual MainCategory MainCategory { get; set; }
+        // YENİ: Ana kategori ve reçete ilişkisi (nullable for backward compatibility)
+        public int? MainCategoryId { get; set; }
+        public virtual MainCategory? MainCategory { get; set; }
         
-        [Required]
-        public int RecipeTemplateId { get; set; }
-        public virtual RecipeTemplate RecipeTemplate { get; set; }
+        public int? RecipeTemplateId { get; set; }
+        public virtual RecipeTemplate? RecipeTemplate { get; set; }
         
         // DEPRECATED: Artık RecipeTemplate kullanılacak
         [Obsolete("Use RecipeTemplateId instead")]

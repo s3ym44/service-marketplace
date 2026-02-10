@@ -12,8 +12,8 @@ using ServiceMarketplace.Data;
 namespace ServiceMarketplace.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260210095723_AddTemplateEnhancements")]
-    partial class AddTemplateEnhancements
+    [Migration("20260210160913_CompleteSystem")]
+    partial class CompleteSystem
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -323,12 +323,20 @@ namespace ServiceMarketplace.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("FullName")
-                        .IsRequired()
+                    b.Property<string>("FirstName")
                         .HasColumnType("text");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
+
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LicenseNumber")
+                        .HasColumnType("text");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
@@ -357,6 +365,12 @@ namespace ServiceMarketplace.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("SecurityStamp")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Specialties")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TaxNumber")
                         .HasColumnType("text");
 
                     b.Property<bool>("TwoFactorEnabled")
@@ -454,6 +468,57 @@ namespace ServiceMarketplace.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ServiceMarketplace.Models.LaborCatalog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("EstimatedDuration")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("FixedPricePerUnit")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LaborType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("RecipeItemId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("WarrantyMonths")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipeItemId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("LaborCatalogs");
+                });
+
             modelBuilder.Entity("ServiceMarketplace.Models.Listing", b =>
                 {
                     b.Property<int>("Id")
@@ -504,7 +569,19 @@ namespace ServiceMarketplace.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<int?>("MainCategoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("RecipeTemplateId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RenovationType")
+                        .HasColumnType("text");
+
                     b.Property<int>("RoomCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ServiceTemplateId")
                         .HasColumnType("integer");
 
                     b.Property<string>("ServiceType")
@@ -531,6 +608,12 @@ namespace ServiceMarketplace.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MainCategoryId");
+
+                    b.HasIndex("RecipeTemplateId");
+
+                    b.HasIndex("ServiceTemplateId");
 
                     b.HasIndex("UserId");
 
@@ -580,6 +663,40 @@ namespace ServiceMarketplace.Migrations
                     b.ToTable("ListingCalculations");
                 });
 
+            modelBuilder.Entity("ServiceMarketplace.Models.MainCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Icon")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MainCategories");
+                });
+
             modelBuilder.Entity("ServiceMarketplace.Models.Offer", b =>
                 {
                     b.Property<int>("Id")
@@ -615,16 +732,20 @@ namespace ServiceMarketplace.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Status")
+                    b.Property<string>("OfferType")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("SupplierId")
+                    b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<decimal>("TotalOfferPrice")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("WarrantyMonths")
                         .HasColumnType("integer");
@@ -633,7 +754,58 @@ namespace ServiceMarketplace.Migrations
 
                     b.HasIndex("ListingId");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("Offers");
+                });
+
+            modelBuilder.Entity("ServiceMarketplace.Models.OfferItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsManualPrice")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("LaborCatalogId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("OfferId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("RecipeItemId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("SupplierCatalogId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LaborCatalogId");
+
+                    b.HasIndex("OfferId");
+
+                    b.HasIndex("RecipeItemId");
+
+                    b.HasIndex("SupplierCatalogId");
+
+                    b.ToTable("OfferItems");
                 });
 
             modelBuilder.Entity("ServiceMarketplace.Models.OfferMaterial", b =>
@@ -680,6 +852,100 @@ namespace ServiceMarketplace.Migrations
                     b.HasIndex("OfferId");
 
                     b.ToTable("OfferMaterials");
+                });
+
+            modelBuilder.Entity("ServiceMarketplace.Models.RecipeItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("DefaultQuantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ItemType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("RecipeTemplateId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipeTemplateId");
+
+                    b.ToTable("RecipeItems");
+                });
+
+            modelBuilder.Entity("ServiceMarketplace.Models.RecipeTemplate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<decimal>("EstimatedBudgetMax")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("EstimatedBudgetMin")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MainCategoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("TotalItems")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MainCategoryId");
+
+                    b.ToTable("RecipeTemplates");
                 });
 
             modelBuilder.Entity("ServiceMarketplace.Models.ServiceTemplate", b =>
@@ -730,6 +996,10 @@ namespace ServiceMarketplace.Migrations
                     b.Property<int>("DisplayOrder")
                         .HasColumnType("integer");
 
+                    b.Property<string>("ItemType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Notes")
                         .IsRequired()
                         .HasColumnType("text");
@@ -752,6 +1022,62 @@ namespace ServiceMarketplace.Migrations
                     b.HasIndex("ServiceTemplateId");
 
                     b.ToTable("ServiceTemplateItems");
+                });
+
+            modelBuilder.Entity("ServiceMarketplace.Models.SupplierCatalog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Brand")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<decimal>("FixedPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("RecipeItemId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SKU")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("StockQuantity")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipeItemId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("SupplierCatalogs");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -823,13 +1149,50 @@ namespace ServiceMarketplace.Migrations
                     b.Navigation("ParentCategory");
                 });
 
-            modelBuilder.Entity("ServiceMarketplace.Models.Listing", b =>
+            modelBuilder.Entity("ServiceMarketplace.Models.LaborCatalog", b =>
                 {
+                    b.HasOne("ServiceMarketplace.Models.RecipeItem", "RecipeItem")
+                        .WithMany("LaborCatalogItems")
+                        .HasForeignKey("RecipeItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("ServiceMarketplace.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("RecipeItem");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ServiceMarketplace.Models.Listing", b =>
+                {
+                    b.HasOne("ServiceMarketplace.Models.MainCategory", "MainCategory")
+                        .WithMany("Listings")
+                        .HasForeignKey("MainCategoryId");
+
+                    b.HasOne("ServiceMarketplace.Models.RecipeTemplate", "RecipeTemplate")
+                        .WithMany("Listings")
+                        .HasForeignKey("RecipeTemplateId");
+
+                    b.HasOne("ServiceMarketplace.Models.ServiceTemplate", "Template")
+                        .WithMany()
+                        .HasForeignKey("ServiceTemplateId");
+
+                    b.HasOne("ServiceMarketplace.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MainCategory");
+
+                    b.Navigation("RecipeTemplate");
+
+                    b.Navigation("Template");
 
                     b.Navigation("User");
                 });
@@ -841,7 +1204,46 @@ namespace ServiceMarketplace.Migrations
                         .HasForeignKey("ListingId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("ServiceMarketplace.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Listing");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ServiceMarketplace.Models.OfferItem", b =>
+                {
+                    b.HasOne("ServiceMarketplace.Models.LaborCatalog", "LaborCatalog")
+                        .WithMany("OfferItems")
+                        .HasForeignKey("LaborCatalogId");
+
+                    b.HasOne("ServiceMarketplace.Models.Offer", "Offer")
+                        .WithMany("OfferItems")
+                        .HasForeignKey("OfferId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ServiceMarketplace.Models.RecipeItem", "RecipeItem")
+                        .WithMany("OfferItems")
+                        .HasForeignKey("RecipeItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ServiceMarketplace.Models.SupplierCatalog", "SupplierCatalog")
+                        .WithMany("OfferItems")
+                        .HasForeignKey("SupplierCatalogId");
+
+                    b.Navigation("LaborCatalog");
+
+                    b.Navigation("Offer");
+
+                    b.Navigation("RecipeItem");
+
+                    b.Navigation("SupplierCatalog");
                 });
 
             modelBuilder.Entity("ServiceMarketplace.Models.OfferMaterial", b =>
@@ -853,6 +1255,28 @@ namespace ServiceMarketplace.Migrations
                         .IsRequired();
 
                     b.Navigation("Offer");
+                });
+
+            modelBuilder.Entity("ServiceMarketplace.Models.RecipeItem", b =>
+                {
+                    b.HasOne("ServiceMarketplace.Models.RecipeTemplate", "RecipeTemplate")
+                        .WithMany("Items")
+                        .HasForeignKey("RecipeTemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RecipeTemplate");
+                });
+
+            modelBuilder.Entity("ServiceMarketplace.Models.RecipeTemplate", b =>
+                {
+                    b.HasOne("ServiceMarketplace.Models.MainCategory", "MainCategory")
+                        .WithMany("RecipeTemplates")
+                        .HasForeignKey("MainCategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MainCategory");
                 });
 
             modelBuilder.Entity("ServiceMarketplace.Models.ServiceTemplateItem", b =>
@@ -874,6 +1298,25 @@ namespace ServiceMarketplace.Migrations
                     b.Navigation("ServiceTemplate");
                 });
 
+            modelBuilder.Entity("ServiceMarketplace.Models.SupplierCatalog", b =>
+                {
+                    b.HasOne("ServiceMarketplace.Models.RecipeItem", "RecipeItem")
+                        .WithMany("SupplierCatalogItems")
+                        .HasForeignKey("RecipeItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ServiceMarketplace.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RecipeItem");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("ServiceMarketplace.Models.Category", b =>
                 {
                     b.Navigation("ChildCategories");
@@ -881,19 +1324,54 @@ namespace ServiceMarketplace.Migrations
                     b.Navigation("Products");
                 });
 
+            modelBuilder.Entity("ServiceMarketplace.Models.LaborCatalog", b =>
+                {
+                    b.Navigation("OfferItems");
+                });
+
             modelBuilder.Entity("ServiceMarketplace.Models.Listing", b =>
                 {
                     b.Navigation("Offers");
                 });
 
+            modelBuilder.Entity("ServiceMarketplace.Models.MainCategory", b =>
+                {
+                    b.Navigation("Listings");
+
+                    b.Navigation("RecipeTemplates");
+                });
+
             modelBuilder.Entity("ServiceMarketplace.Models.Offer", b =>
                 {
                     b.Navigation("Materials");
+
+                    b.Navigation("OfferItems");
+                });
+
+            modelBuilder.Entity("ServiceMarketplace.Models.RecipeItem", b =>
+                {
+                    b.Navigation("LaborCatalogItems");
+
+                    b.Navigation("OfferItems");
+
+                    b.Navigation("SupplierCatalogItems");
+                });
+
+            modelBuilder.Entity("ServiceMarketplace.Models.RecipeTemplate", b =>
+                {
+                    b.Navigation("Items");
+
+                    b.Navigation("Listings");
                 });
 
             modelBuilder.Entity("ServiceMarketplace.Models.ServiceTemplate", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("ServiceMarketplace.Models.SupplierCatalog", b =>
+                {
+                    b.Navigation("OfferItems");
                 });
 #pragma warning restore 612, 618
         }

@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ServiceMarketplace.Migrations
 {
     /// <inheritdoc />
-    public partial class AddAdminAdvancedFeatures : Migration
+    public partial class CompleteSystem : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -33,8 +33,13 @@ namespace ServiceMarketplace.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
-                    FullName = table.Column<string>(type: "text", nullable: false),
+                    FirstName = table.Column<string>(type: "text", nullable: true),
+                    LastName = table.Column<string>(type: "text", nullable: true),
                     CompanyName = table.Column<string>(type: "text", nullable: true),
+                    TaxNumber = table.Column<string>(type: "text", nullable: true),
+                    LicenseNumber = table.Column<string>(type: "text", nullable: true),
+                    Specialties = table.Column<string>(type: "text", nullable: true),
+                    IsVerified = table.Column<bool>(type: "boolean", nullable: false),
                     PhoneNumber2 = table.Column<string>(type: "text", nullable: true),
                     Address = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
@@ -68,11 +73,17 @@ namespace ServiceMarketplace.Migrations
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "text", nullable: true),
                     DisplayOrder = table.Column<int>(type: "integer", nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    ParentCategoryId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Categories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Categories_Categories_ParentCategoryId",
+                        column: x => x.ParentCategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -98,6 +109,23 @@ namespace ServiceMarketplace.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "MainCategories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Icon = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MainCategories", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ServiceTemplates",
                 columns: table => new
                 {
@@ -105,6 +133,7 @@ namespace ServiceMarketplace.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
+                    RenovationType = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
@@ -219,44 +248,6 @@ namespace ServiceMarketplace.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Listings",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<string>(type: "text", nullable: false),
-                    ServiceType = table.Column<string>(type: "text", nullable: false),
-                    Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Description = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
-                    Area = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    RoomCount = table.Column<int>(type: "integer", nullable: false),
-                    CeilingHeight = table.Column<decimal>(type: "numeric(5,2)", nullable: false),
-                    Location = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    StartDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    Deadline = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    Budget = table.Column<decimal>(type: "numeric(18,2)", nullable: true),
-                    Status = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    EstimatedMaterialMin = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    EstimatedMaterialMax = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    EstimatedLaborMin = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    EstimatedLaborMax = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    EstimatedDaysMin = table.Column<int>(type: "integer", nullable: false),
-                    EstimatedDaysMax = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Listings", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Listings_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AdminPriceReferences",
                 columns: table => new
                 {
@@ -286,33 +277,29 @@ namespace ServiceMarketplace.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Offers",
+                name: "RecipeTemplates",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ListingId = table.Column<int>(type: "integer", nullable: true),
-                    SupplierId = table.Column<string>(type: "text", nullable: false),
-                    LaborCost = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    LaborCostType = table.Column<string>(type: "text", nullable: false),
-                    MaterialCostTotal = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    TotalOfferPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    EstimatedDays = table.Column<int>(type: "integer", nullable: false),
-                    WarrantyMonths = table.Column<int>(type: "integer", nullable: false),
-                    MaterialSource = table.Column<string>(type: "text", nullable: false),
-                    AdditionalServicesJson = table.Column<string>(type: "text", nullable: false),
-                    Status = table.Column<string>(type: "text", nullable: false),
+                    MainCategoryId = table.Column<int>(type: "integer", nullable: false),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
+                    TotalItems = table.Column<int>(type: "integer", nullable: false),
+                    EstimatedBudgetMin = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    EstimatedBudgetMax = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Offers", x => x.Id);
+                    table.PrimaryKey("PK_RecipeTemplates", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Offers_Listings_ListingId",
-                        column: x => x.ListingId,
-                        principalTable: "Listings",
+                        name: "FK_RecipeTemplates_MainCategories_MainCategoryId",
+                        column: x => x.MainCategoryId,
+                        principalTable: "MainCategories",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -323,7 +310,11 @@ namespace ServiceMarketplace.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ServiceTemplateId = table.Column<int>(type: "integer", nullable: false),
                     AdminPriceReferenceId = table.Column<int>(type: "integer", nullable: false),
+                    SubCategory = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    ItemType = table.Column<string>(type: "text", nullable: false),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
                     Quantity = table.Column<decimal>(type: "numeric", nullable: false),
+                    Notes = table.Column<string>(type: "text", nullable: false),
                     DefaultNote = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
@@ -339,6 +330,196 @@ namespace ServiceMarketplace.Migrations
                         name: "FK_ServiceTemplateItems_ServiceTemplates_ServiceTemplateId",
                         column: x => x.ServiceTemplateId,
                         principalTable: "ServiceTemplates",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Listings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    MainCategoryId = table.Column<int>(type: "integer", nullable: true),
+                    RecipeTemplateId = table.Column<int>(type: "integer", nullable: true),
+                    ServiceTemplateId = table.Column<int>(type: "integer", nullable: true),
+                    RenovationType = table.Column<string>(type: "text", nullable: true),
+                    ServiceType = table.Column<string>(type: "text", nullable: false),
+                    Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    Area = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    RoomCount = table.Column<int>(type: "integer", nullable: false),
+                    CeilingHeight = table.Column<decimal>(type: "numeric(5,2)", nullable: false),
+                    Location = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    StartDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    Deadline = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    Budget = table.Column<decimal>(type: "numeric(18,2)", nullable: true),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    EstimatedMaterialMin = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    EstimatedMaterialMax = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    EstimatedLaborMin = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    EstimatedLaborMax = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    EstimatedDaysMin = table.Column<int>(type: "integer", nullable: false),
+                    EstimatedDaysMax = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Listings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Listings_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Listings_MainCategories_MainCategoryId",
+                        column: x => x.MainCategoryId,
+                        principalTable: "MainCategories",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Listings_RecipeTemplates_RecipeTemplateId",
+                        column: x => x.RecipeTemplateId,
+                        principalTable: "RecipeTemplates",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Listings_ServiceTemplates_ServiceTemplateId",
+                        column: x => x.ServiceTemplateId,
+                        principalTable: "ServiceTemplates",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RecipeItems",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RecipeTemplateId = table.Column<int>(type: "integer", nullable: false),
+                    ItemType = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    Category = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Unit = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    DefaultQuantity = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
+                    IsRequired = table.Column<bool>(type: "boolean", nullable: false),
+                    Notes = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RecipeItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RecipeItems_RecipeTemplates_RecipeTemplateId",
+                        column: x => x.RecipeTemplateId,
+                        principalTable: "RecipeTemplates",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Offers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ListingId = table.Column<int>(type: "integer", nullable: true),
+                    OfferType = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    MaterialCostTotal = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    LaborCost = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    LaborCostType = table.Column<string>(type: "text", nullable: false),
+                    TotalOfferPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    EstimatedDays = table.Column<int>(type: "integer", nullable: false),
+                    WarrantyMonths = table.Column<int>(type: "integer", nullable: false),
+                    MaterialSource = table.Column<string>(type: "text", nullable: false),
+                    AdditionalServicesJson = table.Column<string>(type: "text", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Offers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Offers_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Offers_Listings_ListingId",
+                        column: x => x.ListingId,
+                        principalTable: "Listings",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LaborCatalogs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    RecipeItemId = table.Column<int>(type: "integer", nullable: false),
+                    LaborType = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    FixedPricePerUnit = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    EstimatedDuration = table.Column<int>(type: "integer", nullable: false),
+                    WarrantyMonths = table.Column<int>(type: "integer", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LaborCatalogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_LaborCatalogs_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_LaborCatalogs_RecipeItems_RecipeItemId",
+                        column: x => x.RecipeItemId,
+                        principalTable: "RecipeItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SupplierCatalogs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    RecipeItemId = table.Column<int>(type: "integer", nullable: false),
+                    ProductName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Brand = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    FixedPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    SKU = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    StockQuantity = table.Column<int>(type: "integer", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SupplierCatalogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SupplierCatalogs_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_SupplierCatalogs_RecipeItems_RecipeItemId",
+                        column: x => x.RecipeItemId,
+                        principalTable: "RecipeItems",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -370,6 +551,49 @@ namespace ServiceMarketplace.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "OfferItems",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    OfferId = table.Column<int>(type: "integer", nullable: false),
+                    RecipeItemId = table.Column<int>(type: "integer", nullable: false),
+                    SupplierCatalogId = table.Column<int>(type: "integer", nullable: true),
+                    LaborCatalogId = table.Column<int>(type: "integer", nullable: true),
+                    Quantity = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    TotalPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    IsManualPrice = table.Column<bool>(type: "boolean", nullable: false),
+                    Notes = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OfferItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OfferItems_LaborCatalogs_LaborCatalogId",
+                        column: x => x.LaborCatalogId,
+                        principalTable: "LaborCatalogs",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_OfferItems_Offers_OfferId",
+                        column: x => x.OfferId,
+                        principalTable: "Offers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_OfferItems_RecipeItems_RecipeItemId",
+                        column: x => x.RecipeItemId,
+                        principalTable: "RecipeItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_OfferItems_SupplierCatalogs_SupplierCatalogId",
+                        column: x => x.SupplierCatalogId,
+                        principalTable: "SupplierCatalogs",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.InsertData(
                 table: "AdminPriceReferences",
                 columns: new[] { "Id", "BasePrice", "Brand", "Category", "CategoryId", "Description", "IsActive", "IsLabor", "MaterialName", "Quality", "Quantity", "RegionModifier", "Unit" },
@@ -393,15 +617,15 @@ namespace ServiceMarketplace.Migrations
 
             migrationBuilder.InsertData(
                 table: "Categories",
-                columns: new[] { "Id", "Description", "DisplayOrder", "IsActive", "Name" },
+                columns: new[] { "Id", "Description", "DisplayOrder", "IsActive", "Name", "ParentCategoryId" },
                 values: new object[,]
                 {
-                    { 1, null, 1, true, "Boya" },
-                    { 2, null, 2, true, "Seramik" },
-                    { 3, null, 3, true, "Mutfak" },
-                    { 4, null, 4, true, "Banyo" },
-                    { 5, null, 5, true, "Elektrik" },
-                    { 6, null, 6, true, "Tesisat" }
+                    { 1, null, 1, true, "Boya", null },
+                    { 2, null, 2, true, "Seramik", null },
+                    { 3, null, 3, true, "Mutfak", null },
+                    { 4, null, 4, true, "Banyo", null },
+                    { 5, null, 5, true, "Elektrik", null },
+                    { 6, null, 6, true, "Tesisat", null }
                 });
 
             migrationBuilder.CreateIndex(
@@ -447,9 +671,59 @@ namespace ServiceMarketplace.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Categories_ParentCategoryId",
+                table: "Categories",
+                column: "ParentCategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LaborCatalogs_RecipeItemId",
+                table: "LaborCatalogs",
+                column: "RecipeItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LaborCatalogs_UserId",
+                table: "LaborCatalogs",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Listings_MainCategoryId",
+                table: "Listings",
+                column: "MainCategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Listings_RecipeTemplateId",
+                table: "Listings",
+                column: "RecipeTemplateId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Listings_ServiceTemplateId",
+                table: "Listings",
+                column: "ServiceTemplateId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Listings_UserId",
                 table: "Listings",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OfferItems_LaborCatalogId",
+                table: "OfferItems",
+                column: "LaborCatalogId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OfferItems_OfferId",
+                table: "OfferItems",
+                column: "OfferId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OfferItems_RecipeItemId",
+                table: "OfferItems",
+                column: "RecipeItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OfferItems_SupplierCatalogId",
+                table: "OfferItems",
+                column: "SupplierCatalogId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OfferMaterials_OfferId",
@@ -462,6 +736,21 @@ namespace ServiceMarketplace.Migrations
                 column: "ListingId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Offers_UserId",
+                table: "Offers",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RecipeItems_RecipeTemplateId",
+                table: "RecipeItems",
+                column: "RecipeTemplateId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RecipeTemplates_MainCategoryId",
+                table: "RecipeTemplates",
+                column: "MainCategoryId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ServiceTemplateItems_AdminPriceReferenceId",
                 table: "ServiceTemplateItems",
                 column: "AdminPriceReferenceId");
@@ -470,6 +759,16 @@ namespace ServiceMarketplace.Migrations
                 name: "IX_ServiceTemplateItems_ServiceTemplateId",
                 table: "ServiceTemplateItems",
                 column: "ServiceTemplateId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SupplierCatalogs_RecipeItemId",
+                table: "SupplierCatalogs",
+                column: "RecipeItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SupplierCatalogs_UserId",
+                table: "SupplierCatalogs",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -494,6 +793,9 @@ namespace ServiceMarketplace.Migrations
                 name: "ListingCalculations");
 
             migrationBuilder.DropTable(
+                name: "OfferItems");
+
+            migrationBuilder.DropTable(
                 name: "OfferMaterials");
 
             migrationBuilder.DropTable(
@@ -503,13 +805,19 @@ namespace ServiceMarketplace.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
+                name: "LaborCatalogs");
+
+            migrationBuilder.DropTable(
+                name: "SupplierCatalogs");
+
+            migrationBuilder.DropTable(
                 name: "Offers");
 
             migrationBuilder.DropTable(
                 name: "AdminPriceReferences");
 
             migrationBuilder.DropTable(
-                name: "ServiceTemplates");
+                name: "RecipeItems");
 
             migrationBuilder.DropTable(
                 name: "Listings");
@@ -519,6 +827,15 @@ namespace ServiceMarketplace.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "RecipeTemplates");
+
+            migrationBuilder.DropTable(
+                name: "ServiceTemplates");
+
+            migrationBuilder.DropTable(
+                name: "MainCategories");
         }
     }
 }

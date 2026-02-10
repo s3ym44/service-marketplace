@@ -120,51 +120,13 @@ if (app.Environment.IsProduction())
         
         try
         {
-            Console.WriteLine("Checking database connection...");
-            var canConnect = db.Database.CanConnect();
-            Console.WriteLine($"Can connect: {canConnect}");
-            
-            if (canConnect)
-            {
-                Console.WriteLine("Getting pending migrations...");
-                var pending = db.Database.GetPendingMigrations().ToList();
-                Console.WriteLine($"Pending migrations count: {pending.Count}");
-                
-                if (pending.Any())
-                {
-                    Console.WriteLine("Pending migrations:");
-                    foreach (var m in pending)
-                    {
-                        Console.WriteLine($"  - {m}");
-                    }
-                    
-                    Console.WriteLine("Applying migrations...");
-                    db.Database.Migrate();
-                    Console.WriteLine("✓ All migrations applied successfully!");
-                }
-                else
-                {
-                    // No migrations found - ensure database schema exists
-                    Console.WriteLine("No migrations found. Running EnsureCreated...");
-                    var created = db.Database.EnsureCreated();
-                    if (created)
-                    {
-                        Console.WriteLine("✓ Database schema created successfully!");
-                    }
-                    else
-                    {
-                        Console.WriteLine("✓ Database schema already exists.");
-                    }
-                }
-            }
-            else
-            {
-                Console.WriteLine("✗ Cannot connect to database!");
-            }
+            Console.WriteLine("🔄 Running migrations...");
+            await db.Database.MigrateAsync(); // ← ÖNEMLI: Tüm pending migrations'ı uygular
+            Console.WriteLine("✅ Migrations completed successfully!");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"✗ MIGRATION ERROR: {ex.GetType().Name}");
+            Console.WriteLine($"❌ MIGRATION ERROR: {ex.GetType().Name}");
             Console.WriteLine($"Message: {ex.Message}");
             if (ex.InnerException != null)
             {

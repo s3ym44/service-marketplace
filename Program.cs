@@ -101,6 +101,8 @@ Console.WriteLine($"PORT: {port}");
 Console.WriteLine($"Environment: {app.Environment.EnvironmentName}");
 Console.WriteLine($"DATABASE_URL exists: {!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DATABASE_URL"))}");
 
+// === RAILWAY DEPLOYMENT ===
+// Last updated: 2026-02-10 17:26 UTC - Force refresh with MigrateAsync
 // Force migration in production
 if (app.Environment.IsProduction())
 {

@@ -6,14 +6,22 @@ namespace ServiceMarketplace.Models
 {
     public class ApplicationUser : IdentityUser // Keep as string ID for compatibility
     {
-        [Required]
-        public string FirstName { get; set; } = string.Empty;
+        public string? FirstName { get; set; }
         
-        [Required]
-        public string LastName { get; set; } = string.Empty;
+        public string? LastName { get; set; }
         
         [NotMapped]
-        public string FullName => $"{FirstName} {LastName}";
+        public string FullName
+        {
+            get
+            {
+                // Handle case where FirstName/LastName might not be set (migration not applied)
+                var first = !string.IsNullOrEmpty(FirstName) ? FirstName : "";
+                var last = !string.IsNullOrEmpty(LastName) ? LastName : "";
+                var full = $"{first} {last}".Trim();
+                return !string.IsNullOrEmpty(full) ? full : Email ?? UserName ?? "User";
+            }
+        }
         
         // Supplier & LaborProvider fields
         public string? CompanyName { get; set; } // For MaterialSupplier and LaborProvider

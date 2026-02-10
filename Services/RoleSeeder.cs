@@ -43,8 +43,6 @@ namespace ServiceMarketplace.Services
                 {
                     UserName = adminEmail,
                     Email = adminEmail,
-                    FirstName = "System",
-                    LastName = "Admin",
                     EmailConfirmed = true,
                     IsVerified = true,
                     IsActive = true,

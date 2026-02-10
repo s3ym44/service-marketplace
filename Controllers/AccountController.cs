@@ -56,8 +56,6 @@ namespace ServiceMarketplace.Controllers
                 {
                     UserName = model.Email,
                     Email = model.Email,
-                    FirstName = model.FullName.Split(' ').FirstOrDefault() ?? model.FullName,
-                    LastName = string.Join(" ", model.FullName.Split(' ').Skip(1)),
                     CompanyName = model.CompanyName,
                     TaxNumber = model.TaxNumber,
                     LicenseNumber = model.LicenseNumber,

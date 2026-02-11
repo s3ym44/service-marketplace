@@ -66,7 +66,7 @@ namespace ServiceMarketplace.Controllers
         // POST: /SupplierCatalog/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(SupplierProduct model)
+        public async Task<IActionResult> Create([Bind("Category,PackageItemId,Brand,ProductName,ModelCode,Description,UnitPrice,Unit,InStock,StockQuantity")] SupplierProduct model)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             
@@ -126,7 +126,7 @@ namespace ServiceMarketplace.Controllers
         // POST: /SupplierCatalog/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, SupplierProduct model)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Category,PackageItemId,Brand,ProductName,ModelCode,Description,UnitPrice,Unit,InStock,StockQuantity")] SupplierProduct model)
         {
             if (id != model.Id)
             {

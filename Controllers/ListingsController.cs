@@ -63,7 +63,9 @@ namespace ServiceMarketplace.Controllers
                 return Challenge();
             }
 
-            var package = await _context.ServicePackages.FindAsync(packageId);
+            var package = await _context.ServicePackages
+                .Include(sp => sp.MainCategory)
+                .FirstOrDefaultAsync(sp => sp.Id == packageId);
             if (package == null)
             {
                 TempData["Error"] = "Paket bulunamadı.";

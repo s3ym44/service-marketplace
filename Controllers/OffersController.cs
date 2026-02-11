@@ -10,7 +10,7 @@ using ServiceMarketplace.ViewModels;
 
 namespace ServiceMarketplace.Controllers
 {
-    [Authorize(Roles = "MaterialSupplier,LaborProvider")]
+    [Authorize(Roles = "MaterialSupplier,LaborProvider,Supplier")]
     public class OffersController : Controller
     {
         private readonly ApplicationDbContext _context;

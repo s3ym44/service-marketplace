@@ -1,0 +1,88 @@
+@model IEnumerable<ServiceMarketplace.Models.ServicePackage>
+
+@{
+    ViewData["Title"] = "Hizmet Paketleri";
+}
+
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-4 mb-3">🎁 Hizmet Paketleri</h1>
+            <p class="lead text-muted">
+                Hazır paketlerimizi inceleyin, ihtiyacınıza uygun olanı seçin ve hemen teklif almaya başlayın.
+            </p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        @foreach (var package in Model)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm hover-shadow-lg transition">
+                    @if (!string.IsNullOrEmpty(package.ThumbnailImage))
+                    {
+                        <img src="@package.ThumbnailImage" 
+                             class="card-img-top" 
+                             alt="@package.Name"
+                             style="height: 200px; object-fit: cover;"
+                             onerror="this.src='/images/placeholder-package.jpg'">
+                    }
+                    else
+                    {
+                        <div class="card-img-top bg-gradient-primary d-flex align-items-center justify-content-center" 
+                             style="height: 200px;">
+                            <i class="bi bi-box-seam text-white" style="font-size: 4rem;"></i>
+                        </div>
+                    }
+                    
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0">@package.Name</h5>
+                            <span class="badge bg-primary">@package.Code</span>
+                        </div>
+                        
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-tag me-1"></i>@package.MainCategory.Name
+                        </p>
+                        
+                        <p class="card-text text-muted">
+                            @package.Description
+                        </p>
+                    </div>
+                    
+                    <div class="card-footer bg-white border-top-0">
+                        <a asp-action="Details" asp-route-id="@package.Id" 
+                           class="btn btn-primary w-100">
+                            <i class="bi bi-eye me-2"></i>Detayları Görüntüle
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="row mt-5">
+            <div class="col-12 text-center">
+                <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+                <p class="text-muted mt-3">Henüz aktif paket bulunmamaktadır.</p>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .hover-shadow-lg {
+        transition: all 0.3s ease;
+    }
+    
+    .hover-shadow-lg:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+    }
+    
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+</style>

@@ -1,0 +1,194 @@
+@{
+    ViewData["Title"] = "Paket ile İlan Oluştur";
+    var package = ViewBag.Package as ServiceMarketplace.Models.ServicePackage;
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Header -->
+            <div class="mb-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Ana Sayfa</a></li>
+                        <li class="breadcrumb-item"><a asp-controller="ServicePackages" asp-action="Index">Paketler</a></li>
+                        <li class="breadcrumb-item"><a asp-controller="ServicePackages" asp-action="Details" asp-route-id="@package.Id">@package.Code</a></li>
+                        <li class="breadcrumb-item active">İlan Oluştur</li>
+                    </ol>
+                </nav>
+                
+                <h1 class="display-5 mb-3">
+                    <i class="bi bi-plus-circle-fill me-2"></i>İlan Oluştur
+                </h1>
+                <div class="alert alert-info">
+                    <strong>@package.Code - @package.Name</strong> paketi için ilan oluşturuyorsunuz.
+                </div>
+            </div>
+
+            <!-- Form -->
+            <form asp-action="CreateWithPackage" method="post" class="card shadow-sm">
+                <input type="hidden" name="packageId" value="@package.Id" />
+                
+                <div class="card-body">
+                    <!-- Basic Info -->
+                    <h5 class="card-title mb-3">
+                        <i class="bi bi-info-circle me-2"></i>Temel Bilgiler
+                    </h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">İlan Başlığı <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="title" required 
+                               placeholder="Örn: 3.2m x 4.2m Mutfak Tadilatı" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Açıklama</label>
+                        <textarea class="form-control" name="description" rows="3" 
+                                  placeholder="Proje hakkında ek bilgiler..."></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Lokasyon <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="location" required 
+                               placeholder="İstanbul, Kadıköy" />
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <!-- Dimensions -->
+                    <h5 class="card-title mb-3">
+                        <i class="bi bi-rulers me-2"></i>Ölçüler
+                    </h5>
+                    <p class="text-muted small mb-3">
+                        Alanınızın ölçülerini santimetre (cm) cinsinden girin. Sistem otomatik olarak gerekli hesaplamaları yapacaktır.
+                    </p>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label">Genişlik (cm) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" name="width" id="width" 
+                                   min="1" step="1" required placeholder="320" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Yükseklik (cm) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" name="height" id="height" 
+                                   min="1" step="1" required placeholder="240" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Derinlik (cm)</label>
+                            <input type="number" class="form-control" name="depth" id="depth" 
+                                   min="0" step="1" placeholder="60" value="0" />
+                        </div>
+                    </div>
+
+                    <!-- Calculated Preview -->
+                    <div id="calculatedPreview" class="alert alert-secondary d-none">
+                        <strong>Hesaplanan Değerler:</strong>
+                        <div id="previewContent" class="mt-2"></div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <!-- Dates -->
+                    <h5 class="card-title mb-3">
+                        <i class="bi bi-calendar-check me-2"></i>Tarihler (Opsiyonel)
+                    </h5>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Başlangıç Tarihi</label>
+                            <input type="date" class="form-control" name="startDate" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Bitiş Tarihi</label>
+                            <input type="date" class="form-control" name="deadline" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="bi bi-check-circle me-2"></i>İlanı Yayınla
+                    </button>
+                    <a asp-controller="ServicePackages" asp-action="Details" asp-route-id="@package.Id" 
+                       class="btn btn-outline-secondary btn-lg ms-2">
+                        <i class="bi bi-x-circle me-2"></i>İptal
+                    </a>
+                </div>
+            </form>
+
+            <!-- Package Items Reference -->
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="bi bi-list-check me-2"></i>Paket İçeriği Özeti
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @foreach (var item in package.Items.OrderBy(i => i.DisplayOrder))
+                        {
+                            <div class="col-md-6 mb-2">
+                                <small>
+                                    <i class="bi bi-check-circle text-success me-1"></i>
+                                    @item.Name (@item.Unit)
+                                </small>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Live calculation preview
+        const widthInput = document.getElementById('width');
+        const heightInput = document.getElementById('height');
+        const depthInput = document.getElementById('depth');
+        const previewDiv = document.getElementById('calculatedPreview');
+        const previewContent = document.getElementById('previewContent');
+
+        function updatePreview() {
+            const width = parseFloat(widthInput.value) || 0;
+            const height = parseFloat(heightInput.value) || 0;
+            const depth = parseFloat(depthInput.value) || 0;
+
+            if (width > 0 && height > 0) {
+                const areaM2 = (width * height) / 10000;
+                const lengthM = width / 100;
+                const wallAreaM2 = depth > 0 ? ((width * height * 2) + (depth * height * 2)) / 10000 : 0;
+
+                let html = `
+                    <div class="row">
+                        <div class="col-md-4">
+                            <strong>Alan:</strong> ${areaM2.toFixed(2)} m²
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Uzunluk:</strong> ${lengthM.toFixed(2)} m
+                        </div>
+                `;
+
+                if (depth > 0) {
+                    html += `
+                        <div class="col-md-4">
+                            <strong>Duvar Alanı:</strong> ${wallAreaM2.toFixed(2)} m²
+                        </div>
+                    `;
+                }
+
+                html += `</div>`;
+                previewContent.innerHTML = html;
+                previewDiv.classList.remove('d-none');
+            } else {
+                previewDiv.classList.add('d-none');
+            }
+        }
+
+        widthInput.addEventListener('input', updatePreview);
+        heightInput.addEventListener('input', updatePreview);
+        depthInput.addEventListener('input', updatePreview);
+    </script>
+}

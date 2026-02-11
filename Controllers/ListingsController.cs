@@ -31,6 +31,90 @@ namespace ServiceMarketplace.Controllers
             return View(new CreateListingViewModel());
         }
 
+        // GET: Listings/CreateWithPackage
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> CreateWithPackage(int packageId)
+        {
+            var package = await _context.ServicePackages
+                .Include(sp => sp.MainCategory)
+                .Include(sp => sp.Items.OrderBy(i => i.DisplayOrder))
+                .FirstOrDefaultAsync(sp => sp.Id == packageId);
+
+            if (package == null)
+            {
+                TempData["Error"] = "Paket bulunamadı.";
+                return RedirectToAction("Index", "ServicePackages");
+            }
+
+            ViewBag.Package = package;
+            return View();
+        }
+
+        // POST: Listings/CreateWithPackage
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> CreateWithPackage(int packageId, string title, string description, 
+            string location, decimal width, decimal height, decimal depth, DateTime? startDate, DateTime? deadline)
+        {
+            var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Challenge();
+            }
+
+            var package = await _context.ServicePackages.FindAsync(packageId);
+            if (package == null)
+            {
+                TempData["Error"] = "Paket bulunamadı.";
+                return RedirectToAction("Index", "ServicePackages");
+            }
+
+            // Store dimensions as JSON
+            var dimensions = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                width,
+                height,
+                depth
+            });
+
+            // Calculate metrics
+            var areaM2 = (width * height) / 10000;
+            var lengthM = width / 100;
+            var wallAreaM2 = ((width * height * 2) + (depth * height * 2)) / 10000;
+
+            var calculatedMetrics = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                areaM2,
+                lengthM,
+                wallAreaM2
+            });
+
+            var listing = new Listing
+            {
+                UserId = userId,
+                ServicePackageId = packageId,
+                MainCategoryId = package.MainCategoryId,
+                Title = title,
+                Description = description,
+                Location = location,
+                Dimensions = dimensions,
+                CalculatedMetrics = calculatedMetrics,
+                Area = areaM2,
+                StartDate = startDate,
+                Deadline = deadline,
+                Status = "Open",
+                CreatedAt = DateTime.UtcNow,
+                ServiceType = package.MainCategory.Name // For backward compatibility
+            };
+
+            _context.Listings.Add(listing);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "İlanınız başarıyla oluşturuldu!";
+            return RedirectToAction(nameof(MyListings));
+        }
+
         // POST: Listings/Create
         [HttpPost]
         [ValidateAntiForgeryToken]

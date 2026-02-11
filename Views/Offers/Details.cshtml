@@ -47,32 +47,94 @@
                 </div>
             </div>
 
-            <h4 class="mt-4">Dahil Malzemeler</h4>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Malzeme</th>
-                        <th>Marka</th>
-                        <th>Miktar</th>
-                        <th>Birim Fiyat</th>
-                        <th>Toplam</th>
-                        <th>Kaynak</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach(var mat in Model.Materials)
-                    {
+            @if (Model.LineItems != null && Model.LineItems.Any())
+            {
+                <!-- Line Items (Package-based Offer) -->
+                <h4 class="mt-4">
+                    <i class="bi bi-list-check me-2"></i>Teklif Kalemleri
+                </h4>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Kalem</th>
+                                <th>Marka</th>
+                                <th>Ürün Adı</th>
+                                <th class="text-end">Miktar</th>
+                                <th class="text-end">Birim Fiyat</th>
+                                <th class="text-end">Toplam</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach(var lineItem in Model.LineItems)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@lineItem.PackageItem.Name</strong>
+                                        <br/>
+                                        <small class="text-muted">
+                                            @lineItem.PackageItem.Category
+                                        </small>
+                                    </td>
+                                    <td>@lineItem.Brand</td>
+                                    <td>@lineItem.ProductName</td>
+                                    <td class="text-end">
+                                        @lineItem.Quantity.ToString("F2") @lineItem.Unit
+                                    </td>
+                                    <td class="text-end">
+                                        @lineItem.UnitPrice.ToString("C")
+                                    </td>
+                                    <td class="text-end">
+                                        <strong>@lineItem.LineTotal.ToString("C")</strong>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="5" class="text-end">
+                                    <strong>GENEL TOPLAM:</strong>
+                                </td>
+                                <td class="text-end">
+                                    <h5 class="text-success mb-0">
+                                        @Model.TotalOfferPrice.ToString("C")
+                                    </h5>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            }
+            else if (Model.Materials != null && Model.Materials.Any())
+            {
+                <!-- Legacy Materials (Old Offer Format) -->
+                <h4 class="mt-4">Dahil Malzemeler</h4>
+                <table class="table table-bordered">
+                    <thead>
                         <tr>
-                            <td>@mat.MaterialName</td>
-                            <td>@mat.Brand</td>
-                            <td>@mat.Quantity @mat.Unit</td>
-                            <td>@mat.UnitPrice.ToString("C")</td>
-                            <td>@mat.TotalPrice.ToString("C")</td>
-                            <td>@(mat.Source == "AdminStock" ? "Admin Stok" : "Özel")</td>
+                            <th>Malzeme</th>
+                            <th>Marka</th>
+                            <th>Miktar</th>
+                            <th>Birim Fiyat</th>
+                            <th>Toplam</th>
+                            <th>Kaynak</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach(var mat in Model.Materials)
+                        {
+                            <tr>
+                                <td>@mat.MaterialName</td>
+                                <td>@mat.Brand</td>
+                                <td>@mat.Quantity @mat.Unit</td>
+                                <td>@mat.UnitPrice.ToString("C")</td>
+                                <td>@mat.TotalPrice.ToString("C")</td>
+                                <td>@(mat.Source == "AdminStock" ? "Admin Stok" : "Özel")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
         </div>
         <div class="card-footer d-flex justify-content-between">
             <a asp-action="MyOffers" class="btn btn-secondary">Listeye Dön</a>

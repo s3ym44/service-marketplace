@@ -21,6 +21,123 @@ namespace ServiceMarketplace.Controllers
             _userManager = userManager;
         }
 
+        // GET: Offers/CreateLineItemsOffer/5 (for package-based listings)
+        public async Task<IActionResult> CreateLineItemsOffer(int listingId)
+        {
+            var listing = await _context.Listings
+                .Include(l => l.ServicePackage)
+                    .ThenInclude(sp => sp.Items.OrderBy(i => i.DisplayOrder))
+                .Include(l => l.User)
+                .FirstOrDefaultAsync(l => l.Id == listingId);
+
+            if (listing == null)
+            {
+                TempData["Error"] = "İlan bulunamadı.";
+                return RedirectToAction("OpenListings", "Listings");
+            }
+
+            if (listing.ServicePackage == null)
+            {
+                TempData["Error"] = "Bu ilan paket tabanlı değil. Standart teklif formunu kullanın.";
+                return RedirectToAction("Create", new { listingId });
+            }
+
+            // Parse dimensions and calculated metrics
+            var dimensions = string.IsNullOrEmpty(listing.Dimensions) 
+                ? null 
+                : JsonSerializer.Deserialize<Dictionary<string, decimal>>(listing.Dimensions);
+            
+            var metrics = string.IsNullOrEmpty(listing.CalculatedMetrics)
+                ? null
+                : JsonSerializer.Deserialize<Dictionary<string, decimal>>(listing.CalculatedMetrics);
+
+            ViewBag.Listing = listing;
+            ViewBag.Dimensions = dimensions;
+            ViewBag.Metrics = metrics;
+
+            return View();
+        }
+
+        // POST: Offers/CreateLineItemsOffer
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateLineItemsOffer(int listingId, int estimatedDays, 
+            int warrantyMonths, string[] itemIds, string[] brands, string[] productNames, 
+            decimal[] quantities, decimal[] unitPrices)
+        {
+            var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Challenge();
+            }
+
+            var listing = await _context.Listings
+                .Include(l => l.ServicePackage)
+                .FirstOrDefaultAsync(l => l.Id == listingId);
+
+            if (listing == null || listing.ServicePackage == null)
+            {
+                TempData["Error"] = "İlan bulunamadı.";
+                return RedirectToAction("OpenListings", "Listings");
+            }
+
+            // Determine offer type based on user role
+            var user = await _userManager.GetUserAsync(User);
+            var roles = await _userManager.GetRolesAsync(user!);
+            var offerType = roles.Contains("MaterialSupplier") ? OfferTypes.Material : OfferTypes.Labor;
+
+            // Create offer
+            var offer = new Offer
+            {
+                ListingId = listingId,
+                UserId = userId,
+                OfferType = offerType,
+                EstimatedDays = estimatedDays,
+                WarrantyMonths = warrantyMonths,
+                Status = OfferStatus.Pending,
+                CreatedAt = DateTime.UtcNow,
+                MaterialSource = "Package"
+            };
+
+            // Create line items
+            var lineItems = new List<OfferLineItem>();
+            decimal totalPrice = 0;
+
+            for (int i = 0; i < itemIds.Length; i++)
+            {
+                if (string.IsNullOrEmpty(brands[i]) || string.IsNullOrEmpty(productNames[i]))
+                    continue;
+
+                var packageItemId = int.Parse(itemIds[i]);
+                var packageItem = await _context.PackageItems.FindAsync(packageItemId);
+                if (packageItem == null) continue;
+
+                var lineTotal = quantities[i] * unitPrices[i];
+                totalPrice += lineTotal;
+
+                lineItems.Add(new OfferLineItem
+                {
+                    PackageItemId = packageItemId,
+                    Brand = brands[i],
+                    ProductName = productNames[i],
+                    Quantity = quantities[i],
+                    Unit = packageItem.Unit,
+                    UnitPrice = unitPrices[i],
+                    LineTotal = lineTotal
+                });
+            }
+
+            offer.TotalOfferPrice = totalPrice;
+            offer.LineItems = lineItems;
+
+            _context.Offers.Add(offer);
+            await _context.SaveChangesAsync();
+
+
+            TempData["Success"] = "Teklifiniz başarıyla gönderildi!";
+            return RedirectToAction("MyOffers");
+        }
+
         // GET: Offers/Create/5
         public IActionResult Create(int listingId)
         {

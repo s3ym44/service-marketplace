@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace ServiceMarketplace.Controllers
 {
-    [Authorize(Roles = "Supplier")]
+    [Authorize(Roles = "MaterialSupplier,LaborProvider")]
     public class SupplierCatalogController : Controller
     {
         private readonly ApplicationDbContext _context;

@@ -69,6 +69,14 @@ builder.Services.ConfigureApplicationCookie(options => {
     options.AccessDeniedPath = "/Account/AccessDenied";
     options.ExpireTimeSpan = TimeSpan.FromDays(7);
     options.SlidingExpiration = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+});
+
+// Configure antiforgery for HTTPS reverse proxy (Railway)
+builder.Services.AddAntiforgery(options => {
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
 // Authorization policies
@@ -212,13 +220,13 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
                        Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
 });
 
+app.UseStaticFiles();
+
 app.UseRouting();
 
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.UseStaticFiles();
 
 app.MapControllerRoute(
     name: "default",

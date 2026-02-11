@@ -189,7 +189,7 @@ namespace ServiceMarketplace.Controllers
         }
 
         // GET: Listings/OpenListings (For Suppliers to browse)
-        [Authorize(Roles = "Supplier")]
+        [Authorize(Roles = "MaterialSupplier,LaborProvider")]
         public async Task<IActionResult> OpenListings(string? serviceType, string? location)
         {
             var query = _context.Listings

@@ -10,7 +10,7 @@ using ServiceMarketplace.ViewModels;
 
 namespace ServiceMarketplace.Controllers
 {
-    [Authorize(Roles = "MaterialSupplier,LaborProvider,Supplier")]
+    [Authorize(Roles = "MaterialSupplier,LaborProvider")]
     public class OffersController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -382,18 +382,9 @@ namespace ServiceMarketplace.Controllers
             return View();
         }
 
-        // Helper: Basit kullanıcı ID'si (Identity olmadan)
         private string GetCurrentUserId()
         {
-            // Identity yapılandırıldığında: return User.Identity?.Name ?? "Anonymous";
-            // Şimdilik session bazlı pseudo ID
-            var sessionId = HttpContext.Session.GetString("UserId");
-            if (string.IsNullOrEmpty(sessionId))
-            {
-                sessionId = "User_" + Guid.NewGuid().ToString("N")[..8];
-                HttpContext.Session.SetString("UserId", sessionId);
-            }
-            return sessionId;
+            return User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
         }
 
         public IActionResult Details(int id)

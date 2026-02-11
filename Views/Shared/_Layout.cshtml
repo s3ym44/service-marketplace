@@ -38,7 +38,7 @@
                                 </a>
                             </li>
                         }
-                        @if (User.IsInRole("Supplier"))
+                        @if (User.IsInRole("MaterialSupplier") || User.IsInRole("LaborProvider"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Listings" asp-action="OpenListings">

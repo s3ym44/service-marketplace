@@ -28,6 +28,11 @@ namespace ServiceMarketplace.Data
         public DbSet<SupplierCatalog> SupplierCatalogs { get; set; }
         public DbSet<LaborCatalog> LaborCatalogs { get; set; }
         public DbSet<OfferItem> OfferItems { get; set; }
+        
+        // Package system (Phase 1)
+        public DbSet<ServicePackage> ServicePackages { get; set; }
+        public DbSet<PackageItem> PackageItems { get; set; }
+        public DbSet<OfferLineItem> OfferLineItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -45,6 +50,38 @@ namespace ServiceMarketplace.Data
                 .HasOne(o => o.Listing)
                 .WithMany(l => l.Offers)
                 .HasForeignKey(o => o.ListingId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Package system relationships
+            modelBuilder.Entity<ServicePackage>()
+                .HasOne(sp => sp.MainCategory)
+                .WithMany()
+                .HasForeignKey(sp => sp.MainCategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PackageItem>()
+                .HasOne(pi => pi.ServicePackage)
+                .WithMany(sp => sp.Items)
+                .HasForeignKey(pi => pi.ServicePackageId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<OfferLineItem>()
+                .HasOne(oli => oli.Offer)
+                .WithMany(o => o.LineItems)
+                .HasForeignKey(oli => oli.OfferId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<OfferLineItem>()
+                .HasOne(oli => oli.PackageItem)
+                .WithMany(pi => pi.OfferLineItems)
+                .HasForeignKey(oli => oli.PackageItemId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Listing>()
+                .HasOne(l => l.ServicePackage)
+                .WithMany(sp => sp.Listings)
+                .HasForeignKey(l => l.ServicePackageId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
 

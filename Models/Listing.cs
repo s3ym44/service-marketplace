@@ -18,6 +18,18 @@ namespace ServiceMarketplace.Models
         public int? RecipeTemplateId { get; set; }
         public virtual RecipeTemplate? RecipeTemplate { get; set; }
         
+        // YENİ: Paket sistemi desteği (Phase 1)
+        public int? ServicePackageId { get; set; }
+        public virtual ServicePackage? ServicePackage { get; set; }
+        
+        // Customer dimensions JSON: {"width": 320, "height": 420, "depth": 260}
+        [StringLength(1000)]
+        public string? Dimensions { get; set; }
+        
+        // Calculated metrics JSON: {"dolapAlani": 8.3, "tezgahUzunlugu": 3.2}
+        [StringLength(2000)]
+        public string? CalculatedMetrics { get; set; }
+        
         // DEPRECATED: Artık RecipeTemplate kullanılacak
         [Obsolete("Use RecipeTemplateId instead")]
         public int? ServiceTemplateId { get; set; }

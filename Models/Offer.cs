@@ -49,6 +49,9 @@ namespace ServiceMarketplace.Models
         // Navigation properties
         public virtual ICollection<OfferItem> OfferItems { get; set; } = new List<OfferItem>();
         
+        // YENİ: Line items for package-based offers (Phase 1)
+        public virtual ICollection<OfferLineItem> LineItems { get; set; } = new List<OfferLineItem>();
+        
         // DEPRECATED: Will be replaced by OfferItems
         [Obsolete("Use OfferItems instead")]
         public virtual List<OfferMaterial> Materials { get; set; } = new List<OfferMaterial>();

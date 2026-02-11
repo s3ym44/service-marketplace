@@ -264,11 +264,141 @@ namespace ServiceMarketplace.Services
             Console.WriteLine($"✓ {items.Count} RecipeItem seeded successfully!");
         }
 
+        public static async Task SeedServicePackagesAsync(ApplicationDbContext context)
+        {
+            if (context.ServicePackages.Any())
+            {
+                Console.WriteLine("ServicePackages already seeded.");
+                return;
+            }
+
+            var packages = new List<ServicePackage>
+            {
+                new ServicePackage
+                {
+                    Id = 1,
+                    Code = "XRANA23",
+                    Name = "Komple Mutfak Tadilatı",
+                    Description = "Dolap, tezgah, seramik ve elektrik işlerini içeren kapsamlı mutfak tadilat paketi",
+                    MainCategoryId = 1, // Mutfak
+                    ThumbnailImage = "/images/packages/mutfak-xrana23.jpg",
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                }
+            };
+
+            await context.ServicePackages.AddRangeAsync(packages);
+            await context.SaveChangesAsync();
+            
+            Console.WriteLine($"✓ {packages.Count} ServicePackage seeded successfully!");
+        }
+
+        public static async Task SeedPackageItemsAsync(ApplicationDbContext context)
+        {
+            if (context.PackageItems.Any())
+            {
+                Console.WriteLine("PackageItems already seeded.");
+                return;
+            }
+
+            var items = new List<PackageItem>
+            {
+                // XRANA23 - Mutfak Paketi
+                new PackageItem
+                {
+                    ServicePackageId = 1,
+                    Category = "Dolap İşleri",
+                    Name = "Alt + Üst Mutfak Dolapları",
+                    ItemType = "Material",
+                    Unit = "m²",
+                    DisplayOrder = 1,
+                    IsRequired = true
+                },
+                new PackageItem
+                {
+                    ServicePackageId = 1,
+                    Category = "Tezgah",
+                    Name = "Mutfak Tezgahı (Granit/Çimstone)",
+                    ItemType = "Material",
+                    Unit = "m",
+                    DisplayOrder = 2,
+                    IsRequired = true
+                },
+                new PackageItem
+                {
+                    ServicePackageId = 1,
+                    Category = "Seramik",
+                    Name = "Duvar Seramiği 30x60",
+                    ItemType = "Material",
+                    Unit = "m²",
+                    DisplayOrder = 3,
+                    IsRequired = true
+                },
+                new PackageItem
+                {
+                    ServicePackageId = 1,
+                    Category = "Armatür",
+                    Name = "Eviye + Batarya",
+                    ItemType = "Material",
+                    Unit = "adet",
+                    DisplayOrder = 4,
+                    IsRequired = true
+                },
+                new PackageItem
+                {
+                    ServicePackageId = 1,
+                    Category = "Cihazlar",
+                    Name = "Ocak + Davlumbaz Set",
+                    ItemType = "Material",
+                    Unit = "set",
+                    DisplayOrder = 5,
+                    IsRequired = false
+                },
+                new PackageItem
+                {
+                    ServicePackageId = 1,
+                    Category = "İşçilik",
+                    Name = "Dolap Montaj İşçiliği",
+                    ItemType = "Labor",
+                    Unit = "m²",
+                    DisplayOrder = 6,
+                    IsRequired = true
+                },
+                new PackageItem
+                {
+                    ServicePackageId = 1,
+                    Category = "İşçilik",
+                    Name = "Seramik Döşeme İşçiliği",
+                    ItemType = "Labor",
+                    Unit = "m²",
+                    DisplayOrder = 7,
+                    IsRequired = true
+                },
+                new PackageItem
+                {
+                    ServicePackageId = 1,
+                    Category = "İşçilik",
+                    Name = "Tesisat ve Elektrik İşçiliği",
+                    ItemType = "Labor",
+                    Unit = "gün",
+                    DisplayOrder = 8,
+                    IsRequired = true
+                }
+            };
+
+            await context.PackageItems.AddRangeAsync(items);
+            await context.SaveChangesAsync();
+            
+            Console.WriteLine($"✓ {items.Count} PackageItem seeded successfully!");
+        }
+
         public static async Task SeedAllCatalogDataAsync(ApplicationDbContext context)
         {
             await SeedMainCategoriesAsync(context);
             await SeedRecipeTemplatesAsync(context);
             await SeedRecipeItemsAsync(context);
+            await SeedServicePackagesAsync(context);
+            await SeedPackageItemsAsync(context);
             
             Console.WriteLine("=== ALL CATALOG DATA SEEDED SUCCESSFULLY ===");
         }

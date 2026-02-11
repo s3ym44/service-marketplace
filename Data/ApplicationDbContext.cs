@@ -33,6 +33,9 @@ namespace ServiceMarketplace.Data
         public DbSet<ServicePackage> ServicePackages { get; set; }
         public DbSet<PackageItem> PackageItems { get; set; }
         public DbSet<OfferLineItem> OfferLineItems { get; set; }
+        
+        // Supplier catalog (Phase 2)
+        public DbSet<SupplierProduct> SupplierProducts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -80,11 +83,38 @@ namespace ServiceMarketplace.Data
 
             modelBuilder.Entity<Listing>()
                 .HasOne(l => l.ServicePackage)
-                .WithMany(sp => sp.Listings)
+                .WithMany()
                 .HasForeignKey(l => l.ServicePackageId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            // Supplier catalog relationships (Phase 2)
+            modelBuilder.Entity<SupplierProduct>()
+                .HasOne(sp => sp.Supplier)
+                .WithMany()
+                .HasForeignKey(sp => sp.SupplierId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<SupplierProduct>()
+                .HasOne(sp => sp.PackageItem)
+                .WithMany()
+                .HasForeignKey(sp => sp.PackageItemId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Indexes for performance
+            modelBuilder.Entity<SupplierProduct>()
+                .HasIndex(sp => new { sp.SupplierId, sp.IsActive });
+
+            modelBuilder.Entity<SupplierProduct>()
+                .HasIndex(sp => sp.Category);
+
+            // Other relationships as needed
+            // You can configure precision/scale for decimals, indexes, etc.
+            modelBuilder.Entity<Offer>()
+                .Property(o => o.TotalOfferPrice)
+                .HasPrecision(18, 2);
+            
             // Seed AdminPriceReferences data as per requirements
             // Seed AdminPriceReferences data as per requirements
              modelBuilder.Entity<AdminPriceReference>().HasData(

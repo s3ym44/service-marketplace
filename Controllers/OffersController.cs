@@ -4,8 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ServiceMarketplace.Data;
 using ServiceMarketplace.Models;
-using ServiceMarketplace.ViewModels;
+using System.Security.Claims;
 using System.Text.Json;
+using ServiceMarketplace.ViewModels;
 
 namespace ServiceMarketplace.Controllers
 {
@@ -51,9 +52,17 @@ namespace ServiceMarketplace.Controllers
                 ? null
                 : JsonSerializer.Deserialize<Dictionary<string, decimal>>(listing.CalculatedMetrics);
 
+            // Load supplier's catalog products for auto-fill
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var catalogProducts = await _context.SupplierProducts
+                .Where(sp => sp.SupplierId == userId && sp.IsActive)
+                .Include(sp => sp.PackageItem)
+                .ToListAsync();
+
             ViewBag.Listing = listing;
             ViewBag.Dimensions = dimensions;
             ViewBag.Metrics = metrics;
+            ViewBag.CatalogProducts = catalogProducts;
 
             return View();
         }

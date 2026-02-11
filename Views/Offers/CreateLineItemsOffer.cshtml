@@ -53,20 +53,52 @@
                                                         {
                                                             <span class="badge bg-warning"><i class="bi bi-tools me-1"></i>İşçilik</span>
                                                         }
-                                                        Birim: <code>@item.Unit</code>
+                                                         Birim: <code>@item.Unit</code>
                                                     </p>
                                                 </div>
                                             </div>
 
+                                            @* Catalog Auto-Fill Dropdown *@
+                                            @{
+                                                var catalogProducts = ViewBag.CatalogProducts as List<ServiceMarketplace.Models.SupplierProduct>;
+                                                var itemCatalogProducts = catalogProducts?.Where(cp => 
+                                                    cp.PackageItemId == item.Id || 
+                                                    (cp.PackageItemId == null && cp.Category.Equals(item.Category, StringComparison.OrdinalIgnoreCase))
+                                                ).ToList();
+                                            }
+
+                                            @if (itemCatalogProducts != null && itemCatalogProducts.Any())
+                                            {
+                                                <div class="row mb-3">
+                                                    <div class="col-12">
+                                                        <label class="form-label small text-success">
+                                                            <i class="bi bi-lightning-charge me-1"></i>Hızlı Seçim (Katalogdan)
+                                                        </label>
+                                                        <select class="form-select catalog-select" data-row-index="@item.Id">
+                                                            <option value="">-- Manuel Giriş --</option>
+                                                            @foreach (var product in itemCatalogProducts)
+                                                            {
+                                                                <option value="@product.Id" 
+                                                                        data-brand="@product.Brand" 
+                                                                        data-product="@product.ProductName"
+                                                                        data-price="@product.UnitPrice">
+                                                                    @product.Brand - @product.ProductName (@product.UnitPrice.ToString("C"))
+                                                                </option>
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            }
+
                                             <div class="row g-2">
                                                 <div class="col-md-3">
                                                     <label class="form-label small">Marka</label>
-                                                    <input type="text" class="form-control" name="brands[]" 
+                                                    <input type="text" class="form-control brand-input" name="brands[]" 
                                                            placeholder="Örn: Kelebek" required />
                                                 </div>
                                                 <div class="col-md-3">
                                                     <label class="form-label small">Ürün Adı</label>
-                                                    <input type="text" class="form-control" name="productNames[]" 
+                                                    <input type="text" class="form-control product-input" name="productNames[]" 
                                                            placeholder="Örn: Modern Dolap" required />
                                                 </div>
                                                 <div class="col-md-2">
@@ -241,6 +273,43 @@
 
             quantityInput.addEventListener('input', () => updateLineTotal(row));
             priceInput.addEventListener('input', () => updateLineTotal(row));
+        });
+
+        // Catalog auto-fill functionality
+        document.querySelectorAll('.catalog-select').forEach(select => {
+            select.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const row = this.closest('.line-item-row');
+                
+                if (selectedOption.value && row) {
+                    // Get data from selected option
+                    const brand = selectedOption.getAttribute('data-brand');
+                    const product = selectedOption.getAttribute('data-product');
+                    const price = selectedOption.getAttribute('data-price');
+                    
+                    // Fill the inputs
+                    const brandInput = row.querySelector('.brand-input');
+                    const productInput = row.querySelector('.product-input');
+                    const priceInput = row.querySelector('.price-input');
+                    
+                    if (brandInput) brandInput.value = brand || '';
+                    if (productInput) productInput.value = product || '';
+                    if (priceInput) {
+                        priceInput.value = price || '';
+                        // Trigger calculation
+                        updateLineTotal(row);
+                    }
+                } else if (row) {
+                    // Manual entry - clear fields (optional)
+                    // Uncomment if you want to clear on "Manuel Giriş" selection
+                    // const brandInput = row.querySelector('.brand-input');
+                    // const productInput = row.querySelector('.product-input');
+                    // const priceInput = row.querySelector('.price-input');
+                    // if (brandInput) brandInput.value = '';
+                    // if (productInput) productInput.value = '';
+                    // if (priceInput) priceInput.value = '';
+                }
+            });
         });
 
         // Initial calculation

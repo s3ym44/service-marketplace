@@ -50,9 +50,9 @@ body {
    Navbar Styling
    ======================================== */
 .navbar {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-  box-shadow: var(--shadow-lg);
-  padding: 0.75rem 0;
+  background: #1a2332 !important;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.15);
+  padding: 0;
   border: none !important;
 }
 

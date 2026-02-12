@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using ServiceMarketplace.Data;
 using ServiceMarketplace.Models;
@@ -62,20 +63,22 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => {
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// Configure cookie settings
+// Configure cookie settings (Railway proxy-safe)
 builder.Services.ConfigureApplicationCookie(options => {
+    options.Cookie.Name = "ServiceMarketplace.Auth";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Lax;
     options.LoginPath = "/Account/Login";
     options.LogoutPath = "/Account/Logout";
     options.AccessDeniedPath = "/Account/AccessDenied";
     options.ExpireTimeSpan = TimeSpan.FromDays(7);
     options.SlidingExpiration = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-    options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
 // Configure antiforgery for HTTPS reverse proxy (Railway)
 builder.Services.AddAntiforgery(options => {
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
@@ -97,12 +100,23 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+// ===== RAILWAY PROXY FIX =====
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 var app = builder.Build();
 
 // Railway dynamic PORT - set early
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Urls.Clear();
 app.Urls.Add($"http://0.0.0.0:{port}");
+
+// ===== BU EN ÜSTTE OLMALI - Railway proxy headers =====
+app.UseForwardedHeaders();
 
 Console.WriteLine($"=== SERVICE MARKETPLACE STARTUP ===");
 Console.WriteLine($"PORT: {port}");
@@ -213,12 +227,8 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
 }
 
-// Forward headers for Railway reverse proxy
-app.UseForwardedHeaders(new ForwardedHeadersOptions
-{
-    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | 
-                       Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
-});
+// HTTPS redirect Railway'de KALDIRILDI - Railway zaten HTTPS terminasyonunu kendisi yapıyor
+// app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 

@@ -61,6 +61,7 @@
                                         <i class="bi bi-pencil"></i> Düzenle
                                     </a>
                                     <form asp-action="DeleteCategory" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Bu kategoriyi silmek istediğinizden emin misiniz?');">
+                                        @Html.AntiForgeryToken()
                                         <button type="submit" class="btn btn-sm btn-outline-danger">
                                             <i class="bi bi-trash"></i> Sil
                                         </button>

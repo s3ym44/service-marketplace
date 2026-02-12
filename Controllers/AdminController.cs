@@ -367,6 +367,29 @@ namespace ServiceMarketplace.Controllers
             return View(model);
         }
 
+        // POST: Admin/DeleteCategory/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteCategory(int id)
+        {
+            var category = await _context.Categories.FindAsync(id);
+            if (category == null) return NotFound();
+
+            // Check if category has products
+            var hasProducts = await _context.AdminPriceReferences.AnyAsync(p => p.CategoryId == id);
+            if (hasProducts)
+            {
+                TempData["Error"] = "Bu kategori altında ürünler var. Önce ürünleri silin veya başka kategoriye taşıyın.";
+                return RedirectToAction(nameof(Categories));
+            }
+
+            _context.Categories.Remove(category);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"'{category.Name}' kategorisi başarıyla silindi.";
+            return RedirectToAction(nameof(Categories));
+        }
+
         #endregion
 
         #region Excel Import

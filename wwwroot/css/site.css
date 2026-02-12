@@ -949,3 +949,425 @@ h2 i {
     gap: 16px;
   }
 }
+
+/* ========================================
+   Compare Offers Page (cmp-)
+   ======================================== */
+.cmp-page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.cmp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.cmp-heading {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.cmp-subheading {
+  color: #64748b;
+  font-size: 14px;
+  margin: 0;
+}
+
+.cmp-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+}
+
+/* Summary Cards Row */
+.cmp-summary-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.cmp-offer-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  border: 2px solid #e8ecf1;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.cmp-offer-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+.cmp-best {
+  border-color: #10b981;
+}
+
+.cmp-accepted {
+  border-color: #22c55e;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+}
+
+.cmp-rejected {
+  opacity: 0.5;
+  border-color: #e2e8f0;
+}
+
+.cmp-best-badge {
+  position: absolute;
+  top: -10px;
+  right: 16px;
+  background: linear-gradient(135deg, #10b981, #34d399);
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.cmp-accepted-badge {
+  position: absolute;
+  top: -10px;
+  right: 16px;
+  background: linear-gradient(135deg, #22c55e, #4ade80);
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.cmp-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.cmp-supplier-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--primary-gradient);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.cmp-supplier-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.cmp-offer-type {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.cmp-price-main {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.cmp-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.cmp-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.cmp-stat-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.cmp-stat-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cmp-highlight {
+  color: #10b981 !important;
+}
+
+.cmp-card-footer {
+  border-top: 1px solid #f1f5f9;
+  padding-top: 12px;
+}
+
+/* Section Title */
+.cmp-section-title h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+/* Line-Item Table */
+.cmp-table-wrapper {
+  overflow-x: auto;
+  border-radius: 14px;
+  border: 1px solid #e8ecf1;
+  background: #fff;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
+}
+
+.cmp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.cmp-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.cmp-th-item {
+  background: var(--text-primary);
+  color: #fff;
+  padding: 14px 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  min-width: 180px;
+}
+
+.cmp-th-offer {
+  background: #1e293b;
+  color: #fff;
+  padding: 14px 16px;
+  text-align: center;
+  font-weight: 600;
+  min-width: 200px;
+}
+
+.cmp-th-accepted {
+  background: #166534 !important;
+}
+
+.cmp-th-rejected {
+  background: #64748b !important;
+}
+
+.cmp-th-mix {
+  background: linear-gradient(135deg, #F97316, #FB923C);
+  color: #fff;
+  padding: 14px 16px;
+  text-align: center;
+  font-weight: 700;
+  min-width: 220px;
+}
+
+.cmp-td-item {
+  padding: 14px 16px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e8ecf1;
+}
+
+.cmp-item-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.cmp-item-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+}
+
+.cmp-td-offer {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  border-left: 1px solid #f1f5f9;
+  vertical-align: top;
+}
+
+.cmp-td-best {
+  background: #f0fdf4 !important;
+}
+
+.cmp-td-rejected {
+  opacity: 0.4;
+}
+
+.cmp-line-brand {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.cmp-line-product {
+  color: #64748b;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.cmp-line-price {
+  font-weight: 800;
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.cmp-line-unit {
+  font-weight: 400;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.cmp-best-tag {
+  display: inline-block;
+  background: #dcfce7;
+  color: #166534;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.cmp-td-mix {
+  padding: 14px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  border-left: 2px solid #F97316;
+  background: #fffbf5;
+  vertical-align: middle;
+}
+
+.cmp-total-row td {
+  padding: 16px;
+  background: #f8fafc;
+  font-size: 16px;
+}
+
+.cmp-td-mix-total {
+  padding: 16px;
+  background: #fff7ed;
+  border-left: 2px solid #F97316;
+  text-align: center;
+  font-size: 18px;
+  color: #F97316;
+}
+
+/* Mix & Match Summary */
+.cmp-mix-summary {
+  background: linear-gradient(135deg, #fff7ed 0%, #fffbeb 100%);
+  border: 1px solid #fed7aa;
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-top: 16px;
+}
+
+.cmp-mix-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.cmp-mix-summary-header h5 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.cmp-mix-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cmp-mix-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #fff;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.cmp-mix-supplier {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.cmp-mix-brand {
+  color: #64748b;
+}
+
+.cmp-mix-price {
+  font-weight: 800;
+  color: #F97316;
+}
+
+/* Legend */
+.cmp-legend {
+  display: flex;
+  gap: 20px;
+  padding: 16px 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.cmp-legend-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.cmp-legend-best {
+  background: #dcfce7;
+  border: 1px solid #10b981;
+}
+
+.cmp-legend-accepted {
+  background: #22c55e;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cmp-summary-row {
+    grid-template-columns: 1fr;
+  }
+
+  .cmp-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .cmp-price-main {
+    font-size: 24px;
+  }
+}

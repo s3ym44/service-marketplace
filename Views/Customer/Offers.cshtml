@@ -2,53 +2,31 @@
 
 @{
     ViewData["Title"] = "Teklifleri Karşılaştır";
+    var pendingOffers = Model.Offers.Where(o => o.Status == "Pending").ToList();
+    var offerCount = Model.Offers.Count;
 }
 
-<style>
-    .best-value {
-        background-color: #d4edda !important;
-        font-weight: bold;
-    }
-    .best-value::after {
-        content: " ★";
-        color: #28a745;
-    }
-    .compare-table th {
-        position: sticky;
-        top: 0;
-        background: #343a40;
-        color: white;
-        z-index: 10;
-    }
-    .offer-header {
-        background: #f8f9fa;
-        font-weight: bold;
-    }
-    .accepted-offer {
-        border: 3px solid #28a745;
-        box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
-    }
-    .rejected-offer {
-        opacity: 0.6;
-    }
-    .row-label {
-        background: #e9ecef;
-        font-weight: 600;
-        white-space: nowrap;
-    }
-</style>
-
-<div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="cmp-page">
+    <!-- Header -->
+    <div class="cmp-header">
         <div>
-            <h2><i class="bi bi-grid-3x3-gap"></i> Teklifleri Karşılaştır</h2>
-            <p class="text-muted mb-0">@Model.ListingTitle • @Model.ListingArea m²</p>
+            <h2 class="cmp-heading"><i class="bi bi-grid-3x3-gap"></i> Teklifleri Karşılaştır</h2>
+            <p class="cmp-subheading">
+                @Model.ListingTitle &bull; @Model.ListingArea m²
+                @if (Model.IsPackageBased)
+                {
+                    <span class="badge bg-primary ms-2">Paket: @Model.Listing.ServicePackage.Name</span>
+                }
+            </p>
         </div>
-        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Geri
-        </a>
+        <div class="d-flex gap-2">
+            <a asp-controller="Listings" asp-action="MyListings" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> İlanlarıma Dön
+            </a>
+        </div>
     </div>
 
+    <!-- Alerts -->
     @if (TempData["Success"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show">
@@ -66,8 +44,10 @@
 
     @if (!Model.Offers.Any())
     {
-        <div class="alert alert-info">
-            <i class="bi bi-inbox"></i> Bu ilan için henüz teklif alınmadı.
+        <div class="cmp-empty">
+            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+            <h5>Henüz teklif yok</h5>
+            <p>Bu ilan için tedarikçilerden teklif bekleniyor.</p>
         </div>
     }
     else
@@ -75,197 +55,352 @@
         @if (Model.HasAcceptedOffer)
         {
             <div class="alert alert-success">
-                <i class="bi bi-check-circle-fill"></i> 
-                <strong>Bir teklif kabul edildi!</strong> Aşağıdaki karşılaştırma son durumu göstermektedir.
+                <i class="bi bi-check-circle-fill"></i>
+                <strong>Bir teklif kabul edildi!</strong> Aşağıda son durum görüntülenmektedir.
             </div>
         }
 
-        <div class="card">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-bordered mb-0 compare-table">
-                        <thead>
-                            <tr>
-                                <th width="150">Kriter</th>
-                                @foreach (var offer in Model.Offers)
-                                {
-                                    <th class="text-center @(offer.Status == "Accepted" ? "table-success" : offer.Status == "Rejected" ? "table-secondary" : "")">
-                                        Teklif #@offer.Id
-                                        <br>
-                                        @{
-                                            var statusText = offer.Status switch
-                                            {
-                                                "Pending" => "Beklemede",
-                                                "Accepted" => "Kabul Edildi",
-                                                "Rejected" => "Reddedildi",
-                                                "Cancelled" => "İptal Edildi",
-                                                _ => offer.Status
-                                            };
-                                        }
-                                        <span class="badge @(offer.Status == "Accepted" ? "bg-success" : offer.Status == "Rejected" ? "bg-danger" : "bg-warning text-dark")">
-                                            @statusText
-                                        </span>
-                                    </th>
-                                }
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Supplier -->
-                            <tr>
-                                <td class="row-label"><i class="bi bi-person"></i> Tedarikçi</td>
-                                @foreach (var offer in Model.Offers)
-                                {
-                                    <td class="text-center">@offer.UserId</td>
-                                }
-                            </tr>
+        <!-- ===== SUMMARY CARDS ===== -->
+        <div class="cmp-summary-row">
+            @foreach (var offer in Model.Offers)
+            {
+                var isAccepted = offer.Status == "Accepted";
+                var isRejected = offer.Status == "Rejected" || offer.Status == "Cancelled";
+                var isBest = offer.TotalOfferPrice == Model.LowestTotalPrice && !isRejected;
+                var supplierName = offer.User?.FullName ?? offer.UserId;
 
-                            <!-- Total Price -->
-                            <tr>
-                                <td class="row-label"><i class="bi bi-cash-stack"></i> Toplam Fiyat</td>
-                                @foreach (var offer in Model.Offers)
-                                {
-                                    <td class="text-center @(offer.TotalOfferPrice == Model.LowestTotalPrice ? "best-value" : "")">
-                                        ₺@offer.TotalOfferPrice.ToString("N2")
-                                    </td>
-                                }
-                            </tr>
+                <div class="cmp-offer-card @(isAccepted ? "cmp-accepted" : "") @(isRejected ? "cmp-rejected" : "") @(isBest && !isAccepted ? "cmp-best" : "")">
+                    @if (isBest && !isAccepted && !isRejected)
+                    {
+                        <div class="cmp-best-badge">En Uygun</div>
+                    }
+                    @if (isAccepted)
+                    {
+                        <div class="cmp-accepted-badge"><i class="bi bi-check-circle-fill"></i> Kabul Edildi</div>
+                    }
 
-                            <!-- Labor Cost -->
-                            <tr>
-                                <td class="row-label"><i class="bi bi-tools"></i> İşçilik</td>
-                                @foreach (var offer in Model.Offers)
-                                {
-                                    <td class="text-center @(offer.LaborCost == Model.LowestLaborCost ? "best-value" : "")">
-                                        ₺@offer.LaborCost.ToString("N2")
-                                        <br><small class="text-muted">(@(offer.LaborCostType == "Fixed" ? "Sabit" : "m² Başına"))</small>
-                                    </td>
+                    <div class="cmp-card-header">
+                        <div class="cmp-supplier-avatar">
+                            @(supplierName.Length >= 2 ? supplierName.Substring(0, 2).ToUpper() : "?")
+                        </div>
+                        <div>
+                            <div class="cmp-supplier-name">@supplierName</div>
+                            <div class="cmp-offer-type">
+                                <span class="badge @(offer.OfferType == "Material" ? "bg-info" : "bg-warning text-dark")">
+                                    @(offer.OfferType == "Material" ? "Malzeme" : "İşçilik")
+                                </span>
+                                @{
+                                    var statusText = offer.Status switch
+                                    {
+                                        "Pending" => "Beklemede",
+                                        "Accepted" => "Kabul Edildi",
+                                        "Rejected" => "Reddedildi",
+                                        "Cancelled" => "İptal",
+                                        _ => offer.Status
+                                    };
+                                    var statusClass = offer.Status switch
+                                    {
+                                        "Pending" => "bg-secondary",
+                                        "Accepted" => "bg-success",
+                                        "Rejected" => "bg-danger",
+                                        _ => "bg-secondary"
+                                    };
                                 }
-                            </tr>
+                                <span class="badge @statusClass">@statusText</span>
+                            </div>
+                        </div>
+                    </div>
 
-                            <!-- Material Cost -->
-                            <tr>
-                                <td class="row-label"><i class="bi bi-box-seam"></i> Malzemeler</td>
-                                @foreach (var offer in Model.Offers)
-                                {
-                                    <td class="text-center @(offer.MaterialCostTotal == Model.LowestMaterialCost ? "best-value" : "")">
-                                        ₺@offer.MaterialCostTotal.ToString("N2")
-                                        <br><small class="text-muted">@offer.Materials.Count kalem</small>
-                                    </td>
-                                }
-                            </tr>
+                    <div class="cmp-price-main">
+                        ₺@offer.TotalOfferPrice.ToString("N0")
+                    </div>
 
-                            <!-- Material Breakdown -->
-                            <tr>
-                                <td class="row-label"><i class="bi bi-list-ul"></i> Malzeme Detayları</td>
-                                @foreach (var offer in Model.Offers)
-                                {
-                                    <td>
-                                        @if (offer.Materials.Any())
-                                        {
-                                            <ul class="list-unstyled mb-0 small">
-                                                @foreach (var mat in offer.Materials.Take(3))
-                                                {
-                                                    <li>• @mat.MaterialName (@mat.Brand)</li>
-                                                }
-                                                @if (offer.Materials.Count > 3)
-                                                {
-                                                    <li class="text-muted">+@(offer.Materials.Count - 3) daha fazla...</li>
-                                                }
-                                            </ul>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">-</span>
-                                        }
-                                    </td>
-                                }
-                            </tr>
+                    <div class="cmp-stats-grid">
+                        <div class="cmp-stat">
+                            <span class="cmp-stat-label">İşçilik</span>
+                            <span class="cmp-stat-value @(offer.LaborCost > 0 && offer.LaborCost == Model.LowestLaborCost ? "cmp-highlight" : "")">
+                                ₺@offer.LaborCost.ToString("N0")
+                            </span>
+                        </div>
+                        <div class="cmp-stat">
+                            <span class="cmp-stat-label">Malzeme</span>
+                            <span class="cmp-stat-value @(offer.MaterialCostTotal > 0 && offer.MaterialCostTotal == Model.LowestMaterialCost ? "cmp-highlight" : "")">
+                                ₺@offer.MaterialCostTotal.ToString("N0")
+                            </span>
+                        </div>
+                        <div class="cmp-stat">
+                            <span class="cmp-stat-label">Süre</span>
+                            <span class="cmp-stat-value @(offer.EstimatedDays > 0 && offer.EstimatedDays == Model.ShortestDays ? "cmp-highlight" : "")">
+                                @offer.EstimatedDays gün
+                            </span>
+                        </div>
+                        <div class="cmp-stat">
+                            <span class="cmp-stat-label">Garanti</span>
+                            <span class="cmp-stat-value @(offer.WarrantyMonths > 0 && offer.WarrantyMonths == Model.LongestWarranty ? "cmp-highlight" : "")">
+                                @offer.WarrantyMonths ay
+                            </span>
+                        </div>
+                    </div>
 
-                            <!-- Estimated Days -->
-                            <tr>
-                                <td class="row-label"><i class="bi bi-calendar3"></i> Süre</td>
-                                @foreach (var offer in Model.Offers)
-                                {
-                                    <td class="text-center @(offer.EstimatedDays == Model.ShortestDays && offer.EstimatedDays > 0 ? "best-value" : "")">
-                                        @offer.EstimatedDays gün
-                                    </td>
-                                }
-                            </tr>
-
-                            <!-- Warranty -->
-                            <tr>
-                                <td class="row-label"><i class="bi bi-shield-check"></i> Garanti</td>
-                                @foreach (var offer in Model.Offers)
-                                {
-                                    <td class="text-center @(offer.WarrantyMonths == Model.LongestWarranty && offer.WarrantyMonths > 0 ? "best-value" : "")">
-                                        @offer.WarrantyMonths ay
-                                    </td>
-                                }
-                            </tr>
-
-                            <!-- Date -->
-                            <tr>
-                                <td class="row-label"><i class="bi bi-clock"></i> Gönderildi</td>
-                                @foreach (var offer in Model.Offers)
-                                {
-                                    <td class="text-center">@offer.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
-                                }
-                            </tr>
-
-                            <!-- Actions -->
-                            <tr>
-                                <td class="row-label"><i class="bi bi-lightning"></i> İşlemler</td>
-                                @foreach (var offer in Model.Offers)
-                                {
-                                    <td class="text-center">
-                                        @if (offer.Status == "Pending" && !Model.HasAcceptedOffer)
-                                        {
-                                            <form asp-action="Accept" asp-route-offerId="@offer.Id" method="post" class="d-inline"
-                                                  onsubmit="return confirm('Bu teklifi kabul etmek istiyor musunuz? Bekleyen diğer teklifler otomatik olarak reddedilecektir.');">
-                                                @Html.AntiForgeryToken()
-                                                <button type="submit" class="btn btn-success btn-sm">
-                                                    <i class="bi bi-check-lg"></i> Kabul Et
-                                                </button>
-                                            </form>
-                                        }
-                                        else if (offer.Status == "Accepted")
-                                        {
-                                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> Kabul Edildi</span>
-                                        }
-                                        else
-                                        {
-                                            var offerStatusText = offer.Status switch
-                                            {
-                                                "Pending" => "Beklemede",
-                                                "Rejected" => "Reddedildi",
-                                                "Cancelled" => "İptal Edildi",
-                                                _ => offer.Status
-                                            };
-                                            <span class="badge bg-secondary">@offerStatusText</span>
-                                        }
-
-                                        
-                                        <a asp-controller="Offers" asp-action="Details" asp-route-id="@offer.Id" 
-                                           class="btn btn-outline-info btn-sm ms-1">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                        <a asp-controller="Offers" asp-action="DownloadPdf" asp-route-id="@offer.Id" 
-                                           class="btn btn-outline-primary btn-sm">
-                                            <i class="bi bi-file-pdf"></i>
-                                        </a>
-                                    </td>
-                                }
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="cmp-card-footer">
+                        @if (offer.Status == "Pending" && !Model.HasAcceptedOffer)
+                        {
+                            <form asp-action="Accept" asp-route-offerId="@offer.Id" method="post"
+                                  onsubmit="return confirm('Bu teklifi kabul etmek istiyor musunuz?\nDiğer teklifler otomatik reddedilecektir.');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-success btn-sm w-100 mb-2">
+                                    <i class="bi bi-check-lg"></i> Kabul Et
+                                </button>
+                            </form>
+                        }
+                        <div class="d-flex gap-1">
+                            <a asp-action="OfferDetails" asp-route-offerId="@offer.Id" class="btn btn-outline-primary btn-sm flex-fill">
+                                <i class="bi bi-eye"></i> Detay
+                            </a>
+                            <a asp-controller="Offers" asp-action="DownloadPdf" asp-route-id="@offer.Id" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-file-pdf"></i>
+                            </a>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            }
         </div>
 
-        <div class="mt-3">
-            <small class="text-muted">
-                <span class="best-value px-2">★</span> = Bu kategoride en iyi değer
-            </small>
+        <!-- ===== LINE-ITEM COMPARISON TABLE (Package-based) ===== -->
+        @if (Model.IsPackageBased && Model.PackageItems.Any())
+        {
+            <div class="cmp-section-title mt-4">
+                <h4><i class="bi bi-list-columns-reverse"></i> Kalem Bazlı Karşılaştırma</h4>
+                <p class="text-muted mb-0">Her kalem için en uygun fiyat yeşil ile vurgulanır.</p>
+            </div>
+
+            <div class="cmp-table-wrapper">
+                <table class="cmp-table">
+                    <thead>
+                        <tr>
+                            <th class="cmp-th-item">Kalem</th>
+                            @foreach (var offer in Model.Offers)
+                            {
+                                var sName = offer.User?.FullName ?? $"Teklif #{offer.Id}";
+                                <th class="cmp-th-offer @(offer.Status == "Accepted" ? "cmp-th-accepted" : "") @(offer.Status == "Rejected" ? "cmp-th-rejected" : "")">
+                                    @sName
+                                </th>
+                            }
+                            @if (pendingOffers.Count > 1 && !Model.HasAcceptedOffer)
+                            {
+                                <th class="cmp-th-mix">Karma Seçim</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var pkgItem in Model.PackageItems)
+                        {
+                            var bestPrice = Model.BestLineItemPrices.ContainsKey(pkgItem.Id)
+                                ? Model.BestLineItemPrices[pkgItem.Id] : 0;
+
+                            <tr>
+                                <td class="cmp-td-item">
+                                    <div class="cmp-item-name">@pkgItem.Name</div>
+                                    <div class="cmp-item-meta">
+                                        <span class="badge @(pkgItem.ItemType == "Material" ? "bg-info" : "bg-warning text-dark") badge-sm">
+                                            @(pkgItem.ItemType == "Material" ? "Malzeme" : "İşçilik")
+                                        </span>
+                                        <span class="text-muted">@pkgItem.Unit</span>
+                                    </div>
+                                </td>
+                                @foreach (var offer in Model.Offers)
+                                {
+                                    var lineItem = offer.LineItems.FirstOrDefault(li => li.PackageItemId == pkgItem.Id);
+                                    var isBestLine = lineItem != null && lineItem.LineTotal > 0 && lineItem.LineTotal == bestPrice;
+
+                                    <td class="cmp-td-offer @(isBestLine ? "cmp-td-best" : "") @(offer.Status == "Rejected" ? "cmp-td-rejected" : "")">
+                                        @if (lineItem != null)
+                                        {
+                                            <div class="cmp-line-brand">@lineItem.Brand</div>
+                                            <div class="cmp-line-product">@lineItem.ProductName</div>
+                                            <div class="cmp-line-price">
+                                                ₺@lineItem.LineTotal.ToString("N0")
+                                                <span class="cmp-line-unit">
+                                                    (@lineItem.Quantity @lineItem.Unit × ₺@lineItem.UnitPrice.ToString("N0"))
+                                                </span>
+                                            </div>
+                                            @if (isBestLine)
+                                            {
+                                                <span class="cmp-best-tag">En Uygun</span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                }
+                                @if (pendingOffers.Count > 1 && !Model.HasAcceptedOffer)
+                                {
+                                    <td class="cmp-td-mix" data-package-item-id="@pkgItem.Id">
+                                        <select class="form-select form-select-sm mix-select" data-item-id="@pkgItem.Id">
+                                            <option value="">Otomatik (en uygun)</option>
+                                            @foreach (var offer in pendingOffers)
+                                            {
+                                                var li = offer.LineItems.FirstOrDefault(x => x.PackageItemId == pkgItem.Id);
+                                                if (li != null)
+                                                {
+                                                    var sn = offer.User?.FullName ?? $"Teklif #{offer.Id}";
+                                                    <option value="@offer.Id" data-price="@li.LineTotal" data-brand="@li.Brand">
+                                                        @sn — ₺@li.LineTotal.ToString("N0") (@li.Brand)
+                                                    </option>
+                                                }
+                                            }
+                                        </select>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                    @if (pendingOffers.Count > 1 && !Model.HasAcceptedOffer)
+                    {
+                        <tfoot>
+                            <tr class="cmp-total-row">
+                                <td class="cmp-td-item"><strong>TOPLAM</strong></td>
+                                @foreach (var offer in Model.Offers)
+                                {
+                                    <td class="cmp-td-offer text-center">
+                                        <strong>₺@offer.TotalOfferPrice.ToString("N0")</strong>
+                                    </td>
+                                }
+                                <td class="cmp-td-mix-total">
+                                    <strong id="mixTotal">₺0</strong>
+                                    <div class="text-muted small">karma toplam</div>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    }
+                </table>
+            </div>
+
+            <!-- Mix & Match Summary -->
+            @if (pendingOffers.Count > 1 && !Model.HasAcceptedOffer)
+            {
+                <div class="cmp-mix-summary" id="mixSummary" style="display: none;">
+                    <div class="cmp-mix-summary-header">
+                        <h5><i class="bi bi-shuffle"></i> Karma Seçim Özeti</h5>
+                        <span class="badge bg-primary" id="mixSavings"></span>
+                    </div>
+                    <div id="mixDetails" class="cmp-mix-details"></div>
+                    <p class="text-muted small mt-2 mb-0">
+                        <i class="bi bi-info-circle"></i> Karma seçim bilgilendirme amaçlıdır. Her kalem için farklı tedarikçilerle ayrı ayrı anlaşmanız gerekecektir.
+                    </p>
+                </div>
+            }
+        }
+
+        <!-- Legend -->
+        <div class="cmp-legend">
+            <span><span class="cmp-legend-dot cmp-legend-best"></span> En uygun fiyat</span>
+            <span><span class="cmp-legend-dot cmp-legend-accepted"></span> Kabul edilen</span>
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var selects = document.querySelectorAll('.mix-select');
+            if (!selects.length) return;
+
+            // Best prices per item (auto-select)
+            var bestPrices = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.BestLineItemPrices));
+            // All line items data for default calculation
+            var allLineItems = {};
+            @foreach (var offer in Model.Offers.Where(o => o.Status == "Pending"))
+            {
+                foreach (var li in offer.LineItems)
+                {
+                    <text>
+                    if (!allLineItems[@li.PackageItemId]) allLineItems[@li.PackageItemId] = [];
+                    allLineItems[@li.PackageItemId].push({
+                        offerId: @offer.Id,
+                        price: @li.LineTotal,
+                        brand: '@Html.Raw(li.Brand.Replace("'", "\\'"))',
+                        supplier: '@Html.Raw((offer.User?.FullName ?? $"Teklif #{offer.Id}").Replace("'", "\\'"))'
+                    });
+                    </text>
+                }
+            }
+
+            function calculateMixTotal() {
+                var total = 0;
+                var details = [];
+                var lowestSingleOffer = @(Model.Offers.Where(o => o.Status == "Pending").Any() ? Model.Offers.Where(o => o.Status == "Pending").Min(o => o.TotalOfferPrice).ToString("0") : "0");
+
+                selects.forEach(function (sel) {
+                    var itemId = sel.getAttribute('data-item-id');
+                    var selected = sel.options[sel.selectedIndex];
+
+                    if (sel.value) {
+                        // User selected a specific offer
+                        var price = parseFloat(selected.getAttribute('data-price')) || 0;
+                        total += price;
+                        details.push({
+                            supplier: selected.text.split(' — ')[0],
+                            brand: selected.getAttribute('data-brand'),
+                            price: price
+                        });
+                    } else {
+                        // Auto: pick cheapest
+                        var items = allLineItems[itemId];
+                        if (items && items.length) {
+                            var cheapest = items.reduce(function (a, b) { return a.price < b.price ? a : b; });
+                            total += cheapest.price;
+                            details.push({
+                                supplier: cheapest.supplier,
+                                brand: cheapest.brand,
+                                price: cheapest.price
+                            });
+                        }
+                    }
+                });
+
+                document.getElementById('mixTotal').textContent = '₺' + total.toLocaleString('tr-TR', { maximumFractionDigits: 0 });
+
+                var summary = document.getElementById('mixSummary');
+                var savingsEl = document.getElementById('mixSavings');
+
+                if (total > 0) {
+                    summary.style.display = 'block';
+                    var saving = lowestSingleOffer - total;
+                    if (saving > 0) {
+                        savingsEl.textContent = '₺' + saving.toLocaleString('tr-TR', { maximumFractionDigits: 0 }) + ' tasarruf';
+                        savingsEl.className = 'badge bg-success';
+                    } else if (saving < 0) {
+                        savingsEl.textContent = '₺' + Math.abs(saving).toLocaleString('tr-TR', { maximumFractionDigits: 0 }) + ' fazla';
+                        savingsEl.className = 'badge bg-warning text-dark';
+                    } else {
+                        savingsEl.textContent = 'Aynı fiyat';
+                        savingsEl.className = 'badge bg-secondary';
+                    }
+
+                    var html = '<div class="cmp-mix-items">';
+                    details.forEach(function (d) {
+                        html += '<div class="cmp-mix-item">';
+                        html += '<span class="cmp-mix-supplier">' + d.supplier + '</span>';
+                        html += '<span class="cmp-mix-brand">' + d.brand + '</span>';
+                        html += '<span class="cmp-mix-price">₺' + d.price.toLocaleString('tr-TR', { maximumFractionDigits: 0 }) + '</span>';
+                        html += '</div>';
+                    });
+                    html += '</div>';
+                    document.getElementById('mixDetails').innerHTML = html;
+                } else {
+                    summary.style.display = 'none';
+                }
+            }
+
+            selects.forEach(function (sel) {
+                sel.addEventListener('change', calculateMixTotal);
+            });
+
+            // Initial calculation
+            calculateMixTotal();
+        })();
+    </script>
+}

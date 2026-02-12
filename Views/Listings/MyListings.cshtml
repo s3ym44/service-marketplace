@@ -71,10 +71,10 @@
                             <a asp-action="Details" asp-route-id="@listing.Id" class="btn btn-outline-primary btn-sm">
                                 <i class="bi bi-eye"></i> Detaylar
                             </a>
-                            @if (listing.Status == "Open" && listing.Offers.Any())
+                            @if (listing.Offers.Any(o => o.Status != "Cancelled"))
                             {
-                                <a asp-controller="Customer" asp-action="Offers" asp-route-listingId="@listing.Id" class="btn btn-success btn-sm">
-                                    <i class="bi bi-grid-3x3-gap"></i> Karşılaştır
+                                <a asp-action="CompareOffers" asp-route-id="@listing.Id" class="btn btn-warning btn-sm">
+                                    <i class="bi bi-bar-chart-line"></i> Teklifleri Karşılaştır (@listing.Offers.Count(o => o.Status != "Cancelled"))
                                 </a>
                             }
                             @if (listing.Status == "Open")

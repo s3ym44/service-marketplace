@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -270,6 +271,72 @@ namespace ServiceMarketplace.Controllers
                 request.CeilingHeight);
 
             return Json(result);
+        }
+
+        // GET: Listings/CompareOffers/5
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> CompareOffers(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var listing = await _context.Listings
+                .Include(l => l.ServicePackage)
+                    .ThenInclude(sp => sp.Items.OrderBy(i => i.DisplayOrder))
+                .Include(l => l.Offers.Where(o => o.Status != "Cancelled"))
+                    .ThenInclude(o => o.LineItems)
+                        .ThenInclude(li => li.PackageItem)
+                .Include(l => l.Offers)
+                    .ThenInclude(o => o.User)
+                .FirstOrDefaultAsync(l => l.Id == id && l.UserId == userId);
+
+            if (listing == null)
+                return NotFound();
+
+            return View(listing);
+        }
+
+        // POST: Listings/AcceptOffer
+        [HttpPost]
+        [Authorize(Roles = "Customer")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AcceptOffer(int offerId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var offer = await _context.Offers
+                .Include(o => o.Listing)
+                .FirstOrDefaultAsync(o => o.Id == offerId && o.Listing.UserId == userId);
+
+            if (offer == null)
+                return NotFound();
+
+            if (offer.Status != "Pending")
+            {
+                TempData["Error"] = "Bu teklif artık kabul edilemez durumda.";
+                return RedirectToAction("CompareOffers", new { id = offer.ListingId });
+            }
+
+            // Kabul edilen teklif
+            offer.Status = "Accepted";
+
+            // Diğer teklifleri reddet
+            var otherOffers = await _context.Offers
+                .Where(o => o.ListingId == offer.ListingId && o.Id != offerId && o.Status == "Pending")
+                .ToListAsync();
+
+            foreach (var other in otherOffers)
+            {
+                other.Status = "Rejected";
+            }
+
+            // İlan durumunu güncelle
+            offer.Listing.Status = "Accepted";
+            offer.Listing.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Teklif kabul edildi! Diğer teklifler otomatik reddedildi.";
+            return RedirectToAction("CompareOffers", new { id = offer.ListingId });
         }
 
         // POST: Listings/Close/5 (Customer closes their listing)

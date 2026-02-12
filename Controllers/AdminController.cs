@@ -71,8 +71,16 @@ namespace ServiceMarketplace.Controllers
         // POST: Admin/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(AdminPriceReference model)
+        public async Task<IActionResult> Create([Bind("Category,CategoryId,MaterialName,Description,Brand,Quality,Quantity,Unit,BasePrice,IsLabor,IsActive,RegionModifier")] AdminPriceReference model)
         {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Where(x => x.Value.Errors.Count > 0)
+                    .Select(x => $"{x.Key}: {string.Join(", ", x.Value.Errors.Select(e => e.ErrorMessage))}")
+                    .ToList();
+                TempData["Error"] = "Validation: " + string.Join(" | ", errors);
+            }
+
             if (ModelState.IsValid)
             {
                 // Auto-fill Category string from ID if selected
@@ -116,9 +124,17 @@ namespace ServiceMarketplace.Controllers
         // POST: Admin/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, AdminPriceReference model)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Category,CategoryId,MaterialName,Description,Brand,Quality,Quantity,Unit,BasePrice,IsLabor,IsActive,RegionModifier")] AdminPriceReference model)
         {
             if (id != model.Id) return BadRequest();
+
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Where(x => x.Value.Errors.Count > 0)
+                    .Select(x => $"{x.Key}: {string.Join(", ", x.Value.Errors.Select(e => e.ErrorMessage))}")
+                    .ToList();
+                TempData["Error"] = "Validation: " + string.Join(" | ", errors);
+            }
 
             if (ModelState.IsValid)
             {

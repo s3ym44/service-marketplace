@@ -1,7 +1,10 @@
 @model List<ServiceMarketplace.Models.Listing>
 
+@using System.Security.Claims
+
 @{
     ViewData["Title"] = "Açık İlanlar";
+    var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 }
 
 <div class="container mt-4">
@@ -110,12 +113,34 @@
                                 <strong>₺@((listing.EstimatedMaterialMin + listing.EstimatedLaborMin).ToString("N0")) - ₺@((listing.EstimatedMaterialMax + listing.EstimatedLaborMax).ToString("N0"))</strong>
                             </div>
                             <div>
+                                @{
+                                    var myOffers = listing.Offers.Where(o => o.UserId == currentUserId).ToList();
+                                    var hasExistingOffer = myOffers.Any();
+                                }
+
+                                @if (hasExistingOffer)
+                                {
+                                    <span class="badge bg-info me-1" title="Bu ilana @myOffers.Count teklif verdiniz">
+                                        <i class="bi bi-check-circle"></i> @myOffers.Count Teklif
+                                    </span>
+                                }
+
                                 <a asp-action="Details" asp-route-id="@listing.Id" class="btn btn-outline-primary btn-sm">
                                     <i class="bi bi-eye"></i> Görüntüle
                                 </a>
-                                <a asp-controller="Offers" asp-action="Create" asp-route-listingId="@listing.Id" class="btn btn-success btn-sm">
-                                    <i class="bi bi-send"></i> Teklif Ver
-                                </a>
+
+                                @if (listing.ServicePackageId.HasValue)
+                                {
+                                    <a asp-controller="Offers" asp-action="CreateLineItemsOffer" asp-route-listingId="@listing.Id" class="btn btn-success btn-sm">
+                                        <i class="bi bi-send"></i> @(hasExistingOffer ? "Yeni Teklif Ver" : "Teklif Ver")
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a asp-controller="Offers" asp-action="Create" asp-route-listingId="@listing.Id" class="btn btn-success btn-sm">
+                                        <i class="bi bi-send"></i> @(hasExistingOffer ? "Yeni Teklif Ver" : "Teklif Ver")
+                                    </a>
+                                }
                             </div>
                         </div>
                     </div>

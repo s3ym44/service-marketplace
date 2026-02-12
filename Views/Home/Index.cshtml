@@ -1,13 +1,14 @@
 @using ServiceMarketplace.Models
-@model List<IGrouping<dynamic, MainCategory>>
+@using ServiceMarketplace.ViewModels
+@model HomeViewModel
 
 @{
     ViewData["Title"] = "Pazarix - Tadilat Pazaryeri";
     ViewData["FullWidth"] = true;
     Layout = "_Layout";
-    var packageCounts = ViewBag.PackageCounts as Dictionary<int, int> ?? new Dictionary<int, int>();
-    var searchQuery = ViewBag.SearchQuery as string ?? "";
-    var activeFilter = ViewBag.ActiveFilter as string ?? "all";
+    var packageCounts = Model.PackageCounts;
+    var searchQuery = Model.SearchQuery;
+    var activeFilter = Model.ActiveFilter;
 }
 
 <!-- ========== HERO SECTION ========== -->
@@ -43,13 +44,10 @@
         <!-- Stats -->
         <div class="row mt-5">
             @{
-                int totalListings = (int)(ViewBag.TotalListings ?? 0);
-                int totalSuppliers = (int)(ViewBag.TotalSuppliers ?? 0);
-                int totalPackages = (int)(ViewBag.TotalPackages ?? 0);
                 var statsData = new[] {
-                    new { Icon = "✅", Value = totalListings + "+", Label = "Oluşturulan İlan" },
-                    new { Icon = "👷", Value = totalSuppliers + "+", Label = "Kayıtlı Usta & Firma" },
-                    new { Icon = "📦", Value = totalPackages.ToString(), Label = "Hazır Tadilat Paketi" },
+                    new { Icon = "✅", Value = Model.TotalListings + "+", Label = "Oluşturulan İlan" },
+                    new { Icon = "👷", Value = Model.TotalSuppliers + "+", Label = "Kayıtlı Usta & Firma" },
+                    new { Icon = "📦", Value = Model.TotalPackages.ToString(), Label = "Hazır Tadilat Paketi" },
                     new { Icon = "⭐", Value = "%95", Label = "Müşteri Memnuniyeti" }
                 };
             }
@@ -93,7 +91,7 @@
 
 <!-- ========== CATEGORY GROUPS ========== -->
 <section class="container" style="padding: 40px 15px 80px;">
-    @if (!Model.Any())
+    @if (!Model.Groups.Any())
     {
         <div style="text-align: center; padding: 80px 0; color: #94a3b8;">
             <div style="font-size: 48px; margin-bottom: 16px;">🔍</div>
@@ -103,25 +101,25 @@
     }
     else
     {
-        @foreach (var group in Model)
+        @foreach (var group in Model.Groups)
         {
             <div style="margin-bottom: 48px;">
                 <!-- Group Header -->
                 <div class="sh-group-header">
                     <span style="font-size: 24px;">
-                        @(group.Key.GroupType == "IcMekan" ? "🏠" : group.Key.GroupType == "DisMekan" ? "🏗️" : "🏢")
+                        @(group.GroupType == "IcMekan" ? "🏠" : group.GroupType == "DisMekan" ? "🏗️" : "🏢")
                     </span>
                     <h2 class="sh-group-title">
-                        @group.Key.GroupTitle
+                        @group.GroupTitle
                     </h2>
                     <span class="sh-group-count">
-                        @group.Count()
+                        @group.Categories.Count
                     </span>
                 </div>
 
                 <!-- Category Cards Grid -->
                 <div class="row g-4">
-                    @foreach (var cat in group)
+                    @foreach (var cat in group.Categories)
                     {
                         var pCount = packageCounts.ContainsKey(cat.Id) ? packageCounts[cat.Id] : 0;
                         <div class="col-12 col-sm-6 col-md-4 col-lg-3">

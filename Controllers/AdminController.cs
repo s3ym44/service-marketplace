@@ -71,7 +71,7 @@ namespace ServiceMarketplace.Controllers
         // POST: Admin/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Category,CategoryId,MaterialName,Description,Brand,Quality,Quantity,Unit,BasePrice,IsLabor,IsActive,RegionModifier")] AdminPriceReference model)
+        public async Task<IActionResult> Create([Bind("CategoryId,MaterialName,Description,Brand,Quality,Quantity,Unit,BasePrice,IsLabor,IsActive,RegionModifier")] AdminPriceReference model)
         {
             if (!ModelState.IsValid)
             {
@@ -321,7 +321,7 @@ namespace ServiceMarketplace.Controllers
         // POST: Admin/CreateCategory
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateCategory(Category model)
+        public async Task<IActionResult> CreateCategory([Bind("Name,Description,DisplayOrder,IsActive")] Category model)
         {
             if (ModelState.IsValid)
             {
@@ -344,7 +344,7 @@ namespace ServiceMarketplace.Controllers
         // POST: Admin/EditCategory/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditCategory(int id, Category model)
+        public async Task<IActionResult> EditCategory(int id, [Bind("Id,Name,Description,DisplayOrder,IsActive")] Category model)
         {
             if (id != model.Id) return BadRequest();
 

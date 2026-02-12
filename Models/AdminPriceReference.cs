@@ -8,13 +8,12 @@ namespace ServiceMarketplace.Models
         [Key]
         public int Id { get; set; }
 
-        // Category string for backward compatibility/legacy, or we can rely on Relation.
-        // For now, let's keep it but make it optional if we switch fully to relation.
-        public string Category { get; set; } 
+        // Category string for backward compatibility/legacy — auto-filled from CategoryId
+        public string? Category { get; set; } 
         
         public int? CategoryId { get; set; }
         [ForeignKey("CategoryId")]
-        public virtual Category CategoryModel { get; set; }
+        public virtual Category? CategoryModel { get; set; }
 
         public string MaterialName { get; set; }
         public string? Description { get; set; } // Detailed description

@@ -70,9 +70,13 @@ namespace ServiceMarketplace.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             
+            // SupplierId ve Supplier form'dan gelmez, server tarafında atanır
+            model.SupplierId = userId!;
+            ModelState.Remove("SupplierId");
+            ModelState.Remove("Supplier");
+            
             if (ModelState.IsValid)
             {
-                model.SupplierId = userId!;
                 model.CreatedAt = DateTime.UtcNow;
                 model.IsActive = true;
 
@@ -134,6 +138,10 @@ namespace ServiceMarketplace.Controllers
             }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // SupplierId ve Supplier form'dan gelmez
+            ModelState.Remove("SupplierId");
+            ModelState.Remove("Supplier");
 
             if (ModelState.IsValid)
             {

@@ -6,14 +6,17 @@
 
 <div class="container my-5">
     <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h2><i class="bi bi-box-seam me-2"></i>Ürün Kataloğum</h2>
-            <p class="text-muted">Sık kullandığınız ürünleri kaydedin, teklif oluştururken hızlıca seçin.</p>
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h2 class="mb-1"><i class="bi bi-box-seam me-2"></i>Ürün Kataloğum</h2>
+            <p class="text-muted mb-0">Sık kullandığınız ürünleri kaydedin, teklif oluştururken hızlıca seçin.</p>
         </div>
-        <div class="col-md-4 text-end">
+        <div class="d-flex gap-2">
+            <a asp-action="ImportProducts" class="btn btn-outline-primary">
+                <i class="bi bi-file-earmark-arrow-up me-1"></i> Excel ile Toplu Yükle
+            </a>
             <a asp-action="Create" class="btn btn-success">
-                <i class="bi bi-plus-circle me-2"></i>Yeni Ürün Ekle
+                <i class="bi bi-plus-circle me-1"></i> Tekli Ürün Ekle
             </a>
         </div>
     </div>

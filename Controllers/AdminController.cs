@@ -526,5 +526,241 @@ namespace ServiceMarketplace.Controllers
         }
 
         #endregion
+
+        #region Recipe Import
+
+        // GET: Admin/ImportRecipe
+        public IActionResult ImportRecipe()
+        {
+            ViewBag.ServicePackages = _context.ServicePackages
+                .Where(sp => sp.IsActive)
+                .OrderBy(sp => sp.Name)
+                .ToList();
+            return View();
+        }
+
+        // POST: Admin/ImportRecipe
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ImportRecipe(IFormFile file, int? servicePackageId, string? newPackageName, string? newPackageCode, int? mainCategoryId)
+        {
+            if (file == null || file.Length == 0)
+            {
+                TempData["Error"] = "Lütfen bir dosya seçin.";
+                return RedirectToAction(nameof(ImportRecipe));
+            }
+
+            if (!Path.GetExtension(file.FileName).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["Error"] = "Sadece .xlsx formatı desteklenir.";
+                return RedirectToAction(nameof(ImportRecipe));
+            }
+
+            try
+            {
+                ServicePackage package;
+
+                if (servicePackageId.HasValue && servicePackageId > 0)
+                {
+                    package = await _context.ServicePackages
+                        .Include(sp => sp.Items)
+                        .FirstOrDefaultAsync(sp => sp.Id == servicePackageId);
+
+                    if (package == null)
+                    {
+                        TempData["Error"] = "Seçilen paket bulunamadı.";
+                        return RedirectToAction(nameof(ImportRecipe));
+                    }
+
+                    // Mevcut kalemleri temizle
+                    _context.PackageItems.RemoveRange(package.Items);
+                }
+                else
+                {
+                    if (string.IsNullOrWhiteSpace(newPackageName))
+                    {
+                        TempData["Error"] = "Yeni paket adı giriniz.";
+                        return RedirectToAction(nameof(ImportRecipe));
+                    }
+
+                    package = new ServicePackage
+                    {
+                        Name = newPackageName,
+                        Code = newPackageCode ?? ("PKT" + DateTime.Now.ToString("yyMMddHHmm")),
+                        MainCategoryId = mainCategoryId ?? 1,
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow,
+                    };
+                    _context.ServicePackages.Add(package);
+                    await _context.SaveChangesAsync();
+                }
+
+                // Excel oku
+                using var stream = new MemoryStream();
+                await file.CopyToAsync(stream);
+                using var workbook = new ClosedXML.Excel.XLWorkbook(stream);
+                var worksheet = workbook.Worksheet(1);
+                var rows = worksheet.RangeUsed().RowsUsed().Skip(1);
+
+                int order = 1;
+                int addedCount = 0;
+                var errors = new List<string>();
+
+                foreach (var row in rows)
+                {
+                    var mainCategory = row.Cell(1).GetValue<string>()?.Trim();
+                    var subCategory = row.Cell(2).GetValue<string>()?.Trim();
+                    var itemType = row.Cell(3).GetValue<string>()?.Trim();
+                    var name = row.Cell(4).GetValue<string>()?.Trim();
+                    var unit = row.Cell(5).GetValue<string>()?.Trim();
+                    var consumption = row.Cell(6).GetValue<string>()?.Trim();
+
+                    if (string.IsNullOrWhiteSpace(name)) continue;
+                    if (mainCategory == "Ana Kategori") continue;
+
+                    if (string.IsNullOrWhiteSpace(mainCategory) || string.IsNullOrWhiteSpace(itemType))
+                    {
+                        errors.Add($"Satır {row.RowNumber()}: Ana Kategori veya Ürün Türü boş. ({name})");
+                        continue;
+                    }
+
+                    var packageItem = new PackageItem
+                    {
+                        ServicePackageId = package.Id,
+                        MainCategory = mainCategory,
+                        SubCategory = subCategory,
+                        ItemType = itemType,
+                        Name = name,
+                        Unit = unit ?? "adet",
+                        ConsumptionFormula = consumption,
+                        DisplayOrder = order++,
+                        IsRequired = itemType != "Alternatif Ürün"
+                    };
+
+                    _context.PackageItems.Add(packageItem);
+                    addedCount++;
+                }
+
+                await _context.SaveChangesAsync();
+
+                var message = $"Reçete başarıyla yüklendi! {addedCount} kalem eklendi. Paket: {package.Name}";
+                if (errors.Any())
+                {
+                    message += $" ({errors.Count} satır atlandı)";
+                    TempData["Warning"] = string.Join("\n", errors.Take(10));
+                }
+                TempData["Success"] = message;
+                return RedirectToAction(nameof(RecipeDetails), new { id = package.Id });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Hata: {ex.Message}";
+                return RedirectToAction(nameof(ImportRecipe));
+            }
+        }
+
+        // GET: Admin/RecipeDetails/5
+        public async Task<IActionResult> RecipeDetails(int id)
+        {
+            var package = await _context.ServicePackages
+                .Include(sp => sp.Items.OrderBy(i => i.DisplayOrder))
+                .Include(sp => sp.MainCategory)
+                .FirstOrDefaultAsync(sp => sp.Id == id);
+
+            if (package == null) return NotFound();
+
+            // Grupla: MainCategory → SubCategory → Items (strongly typed)
+            ViewBag.GroupedItems = package.Items
+                .GroupBy(i => i.MainCategory)
+                .OrderBy(g => g.First().DisplayOrder)
+                .Select(g => new RecipeMainGroup
+                {
+                    MainCategory = g.Key,
+                    TotalCount = g.Count(),
+                    SubGroups = g.GroupBy(i => i.SubCategory ?? "")
+                        .OrderBy(sg => sg.First().DisplayOrder)
+                        .Select(sg => new RecipeSubGroup
+                        {
+                            SubCategory = sg.Key,
+                            Items = sg.OrderBy(i => i.DisplayOrder).ToList()
+                        }).ToList()
+                }).ToList();
+
+            return View(package);
+        }
+
+        // GET: Admin/DownloadRecipeTemplate
+        public IActionResult DownloadRecipeTemplate()
+        {
+            using var workbook = new ClosedXML.Excel.XLWorkbook();
+            var ws = workbook.Worksheets.Add("Reçete Şablonu");
+
+            ws.Cell(1, 1).Value = "Ana Kategori";
+            ws.Cell(1, 2).Value = "Alt Kategori";
+            ws.Cell(1, 3).Value = "Ürün Türü";
+            ws.Cell(1, 4).Value = "Malzeme / Ürün Adı";
+            ws.Cell(1, 5).Value = "Birim";
+            ws.Cell(1, 6).Value = "Tüketim";
+
+            var headerRange = ws.Range(1, 1, 1, 6);
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromHtml("#1a2332");
+            headerRange.Style.Font.FontColor = ClosedXML.Excel.XLColor.White;
+
+            ws.Cell(2, 1).Value = "Zemin";
+            ws.Cell(2, 2).Value = "Hafriyat";
+            ws.Cell(2, 3).Value = "İşçilik";
+            ws.Cell(2, 4).Value = "Zemin Kırım ve Söküm";
+            ws.Cell(2, 5).Value = "m²";
+            ws.Cell(2, 6).Value = "1 m² / alan";
+
+            ws.Cell(3, 1).Value = "Zemin";
+            ws.Cell(3, 2).Value = "Döşeme";
+            ws.Cell(3, 3).Value = "Ana Ürün";
+            ws.Cell(3, 4).Value = "Yer Seramiği 60x60";
+            ws.Cell(3, 5).Value = "m²";
+            ws.Cell(3, 6).Value = "1.1 m² / alan";
+
+            ws.Cell(4, 1).Value = "Zemin";
+            ws.Cell(4, 2).Value = "Döşeme";
+            ws.Cell(4, 3).Value = "Yardımcı Malzeme";
+            ws.Cell(4, 4).Value = "Seramik Yapıştırıcı";
+            ws.Cell(4, 5).Value = "kg";
+            ws.Cell(4, 6).Value = "8-12 kg / m²";
+
+            var validTypes = new[] { "İşçilik", "Ana Ürün", "Yardımcı Malzeme", "Alternatif Ürün" };
+            var typeValidation = ws.Range("C2:C500").CreateDataValidation();
+            typeValidation.List($"\"{string.Join(",", validTypes)}\"");
+
+            ws.Column(1).Width = 18;
+            ws.Column(2).Width = 18;
+            ws.Column(3).Width = 22;
+            ws.Column(4).Width = 40;
+            ws.Column(5).Width = 10;
+            ws.Column(6).Width = 20;
+
+            using var ms = new MemoryStream();
+            workbook.SaveAs(ms);
+            return File(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Recete_Sablonu.xlsx");
+        }
+
+        #endregion
+    }
+}
+
+// Helper classes for RecipeDetails view (avoid anonymous types in Razor)
+namespace ServiceMarketplace.ViewModels
+{
+    public class RecipeMainGroup
+    {
+        public string MainCategory { get; set; } = "";
+        public int TotalCount { get; set; }
+        public List<RecipeSubGroup> SubGroups { get; set; } = new();
+    }
+
+    public class RecipeSubGroup
+    {
+        public string SubCategory { get; set; } = "";
+        public List<ServiceMarketplace.Models.PackageItem> Items { get; set; } = new();
     }
 }

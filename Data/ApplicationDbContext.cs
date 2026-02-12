@@ -97,7 +97,7 @@ namespace ServiceMarketplace.Data
 
             modelBuilder.Entity<SupplierProduct>()
                 .HasOne(sp => sp.PackageItem)
-                .WithMany()
+                .WithMany(pi => pi.SupplierProducts)
                 .HasForeignKey(sp => sp.PackageItemId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);

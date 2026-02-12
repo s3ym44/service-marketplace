@@ -309,80 +309,96 @@ namespace ServiceMarketplace.Services
                 new PackageItem
                 {
                     ServicePackageId = 1,
-                    Category = "Dolap İşleri",
+                    MainCategory = "Mobilya",
+                    SubCategory = "Dolap İşleri",
                     Name = "Alt + Üst Mutfak Dolapları",
-                    ItemType = "Material",
+                    ItemType = "Ana Ürün",
                     Unit = "m²",
+                    ConsumptionFormula = "1 m² / alan",
                     DisplayOrder = 1,
                     IsRequired = true
                 },
                 new PackageItem
                 {
                     ServicePackageId = 1,
-                    Category = "Tezgah",
+                    MainCategory = "Mobilya",
+                    SubCategory = "Tezgah",
                     Name = "Mutfak Tezgahı (Granit/Çimstone)",
-                    ItemType = "Material",
+                    ItemType = "Ana Ürün",
                     Unit = "m",
+                    ConsumptionFormula = "1 m / uzunluk",
                     DisplayOrder = 2,
                     IsRequired = true
                 },
                 new PackageItem
                 {
                     ServicePackageId = 1,
-                    Category = "Seramik",
+                    MainCategory = "Duvar",
+                    SubCategory = "Kaplama",
                     Name = "Duvar Seramiği 30x60",
-                    ItemType = "Material",
+                    ItemType = "Ana Ürün",
                     Unit = "m²",
+                    ConsumptionFormula = "1 m² / alan",
                     DisplayOrder = 3,
                     IsRequired = true
                 },
                 new PackageItem
                 {
                     ServicePackageId = 1,
-                    Category = "Armatür",
+                    MainCategory = "Mobilya",
+                    SubCategory = "Armatür",
                     Name = "Eviye + Batarya",
-                    ItemType = "Material",
+                    ItemType = "Ana Ürün",
                     Unit = "adet",
+                    ConsumptionFormula = "1 adet",
                     DisplayOrder = 4,
                     IsRequired = true
                 },
                 new PackageItem
                 {
                     ServicePackageId = 1,
-                    Category = "Cihazlar",
+                    MainCategory = "Mobilya",
+                    SubCategory = "Cihazlar",
                     Name = "Ocak + Davlumbaz Set",
-                    ItemType = "Material",
+                    ItemType = "Alternatif Ürün",
                     Unit = "set",
+                    ConsumptionFormula = "1 set",
                     DisplayOrder = 5,
                     IsRequired = false
                 },
                 new PackageItem
                 {
                     ServicePackageId = 1,
-                    Category = "İşçilik",
+                    MainCategory = "Mobilya",
+                    SubCategory = "Montaj",
                     Name = "Dolap Montaj İşçiliği",
-                    ItemType = "Labor",
+                    ItemType = "İşçilik",
                     Unit = "m²",
+                    ConsumptionFormula = "1 m² / alan",
                     DisplayOrder = 6,
                     IsRequired = true
                 },
                 new PackageItem
                 {
                     ServicePackageId = 1,
-                    Category = "İşçilik",
+                    MainCategory = "Duvar",
+                    SubCategory = "Kaplama",
                     Name = "Seramik Döşeme İşçiliği",
-                    ItemType = "Labor",
+                    ItemType = "İşçilik",
                     Unit = "m²",
+                    ConsumptionFormula = "1 m² / alan",
                     DisplayOrder = 7,
                     IsRequired = true
                 },
                 new PackageItem
                 {
                     ServicePackageId = 1,
-                    Category = "İşçilik",
+                    MainCategory = "Duvar",
+                    SubCategory = "Tesisat",
                     Name = "Tesisat ve Elektrik İşçiliği",
-                    ItemType = "Labor",
+                    ItemType = "İşçilik",
                     Unit = "gün",
+                    ConsumptionFormula = "2-3 gün",
                     DisplayOrder = 8,
                     IsRequired = true
                 }

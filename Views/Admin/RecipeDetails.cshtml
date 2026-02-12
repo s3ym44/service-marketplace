@@ -1,0 +1,93 @@
+@model ServiceMarketplace.Models.ServicePackage
+@using ServiceMarketplace.ViewModels
+@{
+    ViewData["Title"] = $"Reçete: {Model.Name}";
+    var groupedItems = ViewBag.GroupedItems as List<RecipeMainGroup>;
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <span class="badge bg-primary fs-6 mb-2">@Model.Code</span>
+            <h2 class="fw-bold mb-1">@Model.Name — Reçete Detayı</h2>
+            <p class="text-muted mb-0">Toplam @Model.Items.Count kalem</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="ImportRecipe" class="btn btn-outline-primary">
+                <i class="bi bi-upload me-1"></i> Yeni Reçete Yükle
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Geri
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    @if (groupedItems != null)
+    {
+        foreach (var mainGroup in groupedItems)
+        {
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #1a2332, #2d3a4a); color: #fff;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">@mainGroup.MainCategory</h5>
+                        <span class="badge bg-warning text-dark">@mainGroup.TotalCount kalem</span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    @foreach (var subGroup in mainGroup.SubGroups)
+                    {
+                        <div class="px-3 py-2" style="background: #f8f9fc; border-bottom: 1px solid #e8ecf1;">
+                            <strong style="color: #F97316;">@(string.IsNullOrEmpty(subGroup.SubCategory) ? "Genel" : subGroup.SubCategory)</strong>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm mb-0">
+                                <thead>
+                                    <tr class="small text-muted">
+                                        <th style="width: 50px;">#</th>
+                                        <th>Ürün Türü</th>
+                                        <th>Malzeme / Ürün Adı</th>
+                                        <th>Birim</th>
+                                        <th>Tüketim</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in subGroup.Items)
+                                    {
+                                        var typeColor = item.ItemType switch
+                                        {
+                                            "İşçilik" => "#10b981",
+                                            "Ana Ürün" => "#3b82f6",
+                                            "Yardımcı Malzeme" => "#f59e0b",
+                                            "Alternatif Ürün" => "#8b5cf6",
+                                            _ => "#64748b"
+                                        };
+                                        <tr>
+                                            <td class="text-muted small">@item.DisplayOrder</td>
+                                            <td>
+                                                <span class="badge" style="background: @(typeColor)20; color: @typeColor; font-weight: 600;">
+                                                    @item.ItemType
+                                                </span>
+                                            </td>
+                                            <td><strong>@item.Name</strong></td>
+                                            <td>@item.Unit</td>
+                                            <td class="text-muted">@item.ConsumptionFormula</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-info">Bu pakette henüz kalem yok.</div>
+    }
+</div>

@@ -23,107 +23,103 @@
                 <input type="hidden" name="listingId" value="@listing.Id" />
 
                 <div class="row">
-                    <!-- Line Items Form -->
+                    <!-- Line Items Form — Grouped by MainCategory -->
                     <div class="col-lg-8">
-                        <div class="card shadow-sm mb-4">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-list-ul me-2"></i>Teklif Kalemleri
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div id="lineItemsContainer">
-                                    @foreach (var item in listing.ServicePackage.Items.OrderBy(i => i.DisplayOrder))
-                                    {
-                                        <div class="line-item-row mb-4 pb-4 border-bottom" data-item-id="@item.Id">
-                                            <input type="hidden" name="itemIds[]" value="@item.Id" />
-                                            
-                                            <div class="row mb-2">
-                                                <div class="col-12">
-                                                    <h6 class="text-primary mb-1">
-                                                        <span class="badge bg-secondary">@item.Category</span>
-                                                        @item.Name
-                                                    </h6>
-                                                    <p class="text-muted small mb-2">
-                                                        @if (item.ItemType == "Material")
-                                                        {
-                                                            <span class="badge bg-info"><i class="bi bi-box me-1"></i>Malzeme</span>
-                                                        }
-                                                        else
-                                                        {
-                                                            <span class="badge bg-warning"><i class="bi bi-tools me-1"></i>İşçilik</span>
-                                                        }
-                                                         Birim: <code>@item.Unit</code>
-                                                    </p>
-                                                </div>
-                                            </div>
+                        @{
+                            var catalogProducts = ViewBag.CatalogProducts as List<ServiceMarketplace.Models.SupplierProduct>;
+                            var groupedItems = listing.ServicePackage.Items
+                                .OrderBy(i => i.DisplayOrder)
+                                .GroupBy(i => i.MainCategory);
+                        }
 
-                                            @* Catalog Auto-Fill Dropdown *@
-                                            @{
-                                                var catalogProducts = ViewBag.CatalogProducts as List<ServiceMarketplace.Models.SupplierProduct>;
-                                                var itemCatalogProducts = catalogProducts?.Where(cp => 
-                                                    cp.PackageItemId == item.Id || 
-                                                    (cp.PackageItemId == null && cp.Category.Equals(item.Category, StringComparison.OrdinalIgnoreCase))
-                                                ).ToList();
-                                            }
+                        @foreach (var mainGroup in groupedItems)
+                        {
+                            var groupId = mainGroup.Key.Replace(" ", "").Replace("/", "");
+                            <div class="card shadow-sm mb-3">
+                                <div class="card-header d-flex justify-content-between align-items-center"
+                                     data-bs-toggle="collapse" data-bs-target="#group-@groupId"
+                                     style="cursor: pointer; background: linear-gradient(135deg, #1a2332, #2d3a4a); color: #fff;">
+                                    <h6 class="mb-0 fw-bold">@mainGroup.Key</h6>
+                                    <span class="badge bg-warning text-dark">@mainGroup.Count() kalem</span>
+                                </div>
+                                <div id="group-@groupId" class="collapse show">
+                                    <div class="card-body p-0">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <thead class="table-light">
+                                                    <tr class="small text-muted">
+                                                        <th style="width: 100px;">Tür</th>
+                                                        <th>Kalem</th>
+                                                        <th style="width: 50px;">Birim</th>
+                                                        <th style="width: 130px;">Marka</th>
+                                                        <th style="width: 140px;">Ürün</th>
+                                                        <th style="width: 80px;">Miktar</th>
+                                                        <th style="width: 100px;">Birim Fiyat</th>
+                                                        <th style="width: 90px;">Toplam</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var item in mainGroup.OrderBy(i => i.DisplayOrder))
+                                                    {
+                                                        var itemTypeColor = item.ItemType switch {
+                                                            "İşçilik" => "#10b981",
+                                                            "Ana Ürün" => "#3b82f6",
+                                                            "Yardımcı Malzeme" => "#f59e0b",
+                                                            "Alternatif Ürün" => "#8b5cf6",
+                                                            "Material" => "#3b82f6",
+                                                            "Labor" => "#10b981",
+                                                            _ => "#64748b"
+                                                        };
+                                                        var itemCatalogProducts = catalogProducts?.Where(cp =>
+                                                            cp.PackageItemId == item.Id ||
+                                                            (cp.PackageItemId == null && cp.Category.Equals(item.MainCategory, StringComparison.OrdinalIgnoreCase))
+                                                        ).ToList();
 
-                                            @if (itemCatalogProducts != null && itemCatalogProducts.Any())
-                                            {
-                                                <div class="row mb-3">
-                                                    <div class="col-12">
-                                                        <label class="form-label small text-success">
-                                                            <i class="bi bi-lightning-charge me-1"></i>Hızlı Seçim (Katalogdan)
-                                                        </label>
-                                                        <select class="form-select catalog-select" data-row-index="@item.Id">
-                                                            <option value="">-- Manuel Giriş --</option>
-                                                            @foreach (var product in itemCatalogProducts)
-                                                            {
-                                                                <option value="@product.Id" 
-                                                                        data-brand="@product.Brand" 
-                                                                        data-product="@product.ProductName"
-                                                                        data-price="@product.UnitPrice">
-                                                                    @product.Brand - @product.ProductName (@product.UnitPrice.ToString("C"))
-                                                                </option>
-                                                            }
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            }
-
-                                            <div class="row g-2">
-                                                <div class="col-md-3">
-                                                    <label class="form-label small">Marka</label>
-                                                    <input type="text" class="form-control brand-input" name="brands[]" 
-                                                           placeholder="Örn: Kelebek" required />
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <label class="form-label small">Ürün Adı</label>
-                                                    <input type="text" class="form-control product-input" name="productNames[]" 
-                                                           placeholder="Örn: Modern Dolap" required />
-                                                </div>
-                                                <div class="col-md-2">
-                                                    <label class="form-label small">Miktar</label>
-                                                    <input type="number" class="form-control quantity-input" 
-                                                           name="quantities[]" min="0" step="0.01" 
-                                                           placeholder="0" required />
-                                                </div>
-                                                <div class="col-md-2">
-                                                    <label class="form-label small">Birim Fiyat (₺)</label>
-                                                    <input type="number" class="form-control price-input" 
-                                                           name="unitPrices[]" min="0" step="0.01" 
-                                                           placeholder="0.00" required />
-                                                </div>
-                                                <div class="col-md-2">
-                                                    <label class="form-label small">Toplam (₺)</label>
-                                                    <input type="text" class="form-control line-total" 
-                                                           readonly value="0.00" />
-                                                </div>
-                                            </div>
+                                                        <tr class="line-item-row" data-item-id="@item.Id">
+                                                            <td>
+                                                                <input type="hidden" name="itemIds[]" value="@item.Id" />
+                                                                <span class="badge" style="font-size: 10px; background: @(itemTypeColor)20; color: @itemTypeColor;">
+                                                                    @item.ItemType
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                <strong class="small">@item.Name</strong>
+                                                                @if (!string.IsNullOrEmpty(item.ConsumptionFormula))
+                                                                {
+                                                                    <br><small class="text-muted">@item.ConsumptionFormula</small>
+                                                                }
+                                                                @if (itemCatalogProducts != null && itemCatalogProducts.Any())
+                                                                {
+                                                                    <br>
+                                                                    <select class="form-select form-select-sm catalog-select mt-1" data-row-index="@item.Id" style="font-size: 11px;">
+                                                                        <option value="">Katalogdan seç...</option>
+                                                                        @foreach (var product in itemCatalogProducts)
+                                                                        {
+                                                                            <option value="@product.Id"
+                                                                                    data-brand="@product.Brand"
+                                                                                    data-product="@product.ProductName"
+                                                                                    data-price="@product.UnitPrice">
+                                                                                @product.Brand - @product.ProductName (@product.UnitPrice.ToString("C"))
+                                                                            </option>
+                                                                        }
+                                                                    </select>
+                                                                }
+                                                            </td>
+                                                            <td class="small">@item.Unit</td>
+                                                            <td><input type="text" name="brands[]" class="form-control form-control-sm brand-input" placeholder="Marka" /></td>
+                                                            <td><input type="text" name="productNames[]" class="form-control form-control-sm product-input" placeholder="Ürün adı" /></td>
+                                                            <td><input type="number" name="quantities[]" class="form-control form-control-sm quantity-input" step="0.01" value="0" min="0" /></td>
+                                                            <td><input type="number" name="unitPrices[]" class="form-control form-control-sm price-input" step="0.01" value="0" min="0" /></td>
+                                                            <td class="line-total fw-bold small">₺0.00</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
                                         </div>
-                                    }
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        }
 
                         <!-- Additional Info -->
                         <div class="card shadow-sm mb-4">
@@ -246,20 +242,21 @@
         function updateLineTotal(row) {
             const quantityInput = row.querySelector('.quantity-input');
             const priceInput = row.querySelector('.price-input');
-            const lineTotalInput = row.querySelector('.line-total');
+            const lineTotalEl = row.querySelector('.line-total');
 
             const quantity = parseFloat(quantityInput.value) || 0;
             const price = parseFloat(priceInput.value) || 0;
             const lineTotal = quantity * price;
 
-            lineTotalInput.value = lineTotal.toFixed(2);
+            lineTotalEl.textContent = '₺' + lineTotal.toFixed(2);
+            lineTotalEl.setAttribute('data-total', lineTotal);
             updateGrandTotal();
         }
 
         function updateGrandTotal() {
             let grandTotal = 0;
-            document.querySelectorAll('.line-total').forEach(input => {
-                grandTotal += parseFloat(input.value) || 0;
+            document.querySelectorAll('.line-total').forEach(el => {
+                grandTotal += parseFloat(el.getAttribute('data-total')) || 0;
             });
 
             document.getElementById('grandTotal').textContent = 

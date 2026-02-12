@@ -1,0 +1,104 @@
+@{
+    ViewData["Title"] = "Reçete İçe Aktar";
+    var packages = ViewBag.ServicePackages as List<ServiceMarketplace.Models.ServicePackage>;
+}
+
+<div class="container py-4" style="max-width: 800px;">
+    <h2 class="fw-bold mb-4"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Reçete İçe Aktar (Excel)</h2>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+    @if (TempData["Warning"] != null)
+    {
+        <div class="alert alert-warning"><pre style="white-space: pre-wrap; margin: 0;">@TempData["Warning"]</pre></div>
+    }
+
+    <!-- Şablon İndir -->
+    <div class="card mb-4 border-0 shadow-sm" style="background: linear-gradient(135deg, #f0f9ff, #f5f3ff);">
+        <div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div>
+                <h5 class="fw-bold mb-1"><i class="bi bi-download me-1"></i> Excel Şablonu</h5>
+                <p class="text-muted mb-0">Sütunlar: Ana Kategori | Alt Kategori | Ürün Türü | Malzeme Adı | Birim | Tüketim</p>
+            </div>
+            <a asp-action="DownloadRecipeTemplate" class="btn btn-primary">
+                <i class="bi bi-download me-1"></i> Şablonu İndir
+            </a>
+        </div>
+    </div>
+
+    <!-- Upload Form -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <form asp-action="ImportRecipe" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                <!-- Paket Seçimi -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Hangi pakete eklenecek?</label>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="packageChoice" id="existingPackage" value="existing" checked onchange="togglePackageFields()">
+                        <label class="form-check-label" for="existingPackage">Mevcut pakete ekle (mevcut kalemler silinir)</label>
+                    </div>
+                    <select name="servicePackageId" id="existingPackageSelect" class="form-select mb-3">
+                        <option value="">Paket seçin...</option>
+                        @if (packages != null)
+                        {
+                            @foreach (var p in packages)
+                            {
+                                <option value="@p.Id">@p.Code - @p.Name</option>
+                            }
+                        }
+                    </select>
+
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="packageChoice" id="newPackage" value="new" onchange="togglePackageFields()">
+                        <label class="form-check-label" for="newPackage">Yeni paket oluştur</label>
+                    </div>
+                    <div id="newPackageFields" style="display: none;">
+                        <div class="row g-2">
+                            <div class="col-md-4 mb-2">
+                                <input type="text" name="newPackageCode" class="form-control" placeholder="Paket Kodu (ör: XRANA23)">
+                            </div>
+                            <div class="col-md-8 mb-2">
+                                <input type="text" name="newPackageName" class="form-control" placeholder="Paket Adı (ör: Komple Mutfak Tadilatı)">
+                            </div>
+                            <div class="col-md-12 mb-2">
+                                <select name="mainCategoryId" class="form-select">
+                                    <option value="">Ana Kategori Seçin...</option>
+                                    <!-- Categories loaded from MainCategories -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dosya Yükleme -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Excel Dosyası (.xlsx)</label>
+                    <input type="file" name="file" class="form-control" accept=".xlsx" required>
+                    <small class="text-muted">İlk satır başlık olmalı, 2. satırdan itibaren veri</small>
+                </div>
+
+                <button type="submit" class="btn btn-success btn-lg w-100">
+                    <i class="bi bi-upload me-1"></i> Reçeteyi İçe Aktar
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function togglePackageFields() {
+    var isNew = document.getElementById('newPackage').checked;
+    document.getElementById('newPackageFields').style.display = isNew ? 'block' : 'none';
+    document.getElementById('existingPackageSelect').disabled = isNew;
+}
+</script>
+}

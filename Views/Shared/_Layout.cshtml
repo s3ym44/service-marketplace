@@ -62,6 +62,7 @@
                                     @if (User.IsInRole("Admin"))
                                     {
                                         <li><a class="dropdown-item" asp-controller="Admin" asp-action="Categories">Kategoriler</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="ImportRecipe"><i class="bi bi-file-earmark-spreadsheet me-1"></i> Reçete Yükle</a></li>
                                         <li><a class="dropdown-item" asp-controller="Templates" asp-action="Index">Şablonlar</a></li>
                                         <li><hr class="dropdown-divider"></li>
                                     }

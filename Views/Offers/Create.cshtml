@@ -329,6 +329,73 @@ $(document).ready(function() {
                 }
             });
             
+            // CATALOG MODAL: "Seçilenleri Ekle" button
+            $('#btnAddSelectedCatalog').click(function() {
+                let addedCount = 0;
+                $('.catalog-check:checked').each(function() {
+                    const $cb = $(this);
+                    addMaterial({
+                        name: $cb.data('name'),
+                        brand: $cb.data('brand'),
+                        quantity: 1,
+                        unit: $cb.data('unit'),
+                        unitPrice: parseFloat($cb.data('price')),
+                        source: 'AdminStock',
+                        adminPriceId: parseInt($cb.val())
+                    });
+                    $cb.prop('checked', false);
+                    addedCount++;
+                });
+
+                if (addedCount === 0) {
+                    alert('Lütfen en az bir ürün seçin.');
+                    return;
+                }
+
+                // Close modal
+                var modal = bootstrap.Modal.getInstance(document.getElementById('catalogModal'));
+                if (modal) modal.hide();
+            });
+
+            // CATALOG SEARCH: Filter rows
+            $('#catalogSearch').on('input', function() {
+                const query = $(this).val().toLowerCase();
+                $('.catalog-item-row').each(function() {
+                    const text = $(this).text().toLowerCase();
+                    $(this).toggle(text.includes(query));
+                });
+            });
+
+            // TEMPLATE LOADER
+            $('#btnLoadTemplate').click(function() {
+                const templateId = $('#templateSelect').val();
+                if (!templateId) {
+                    alert('Lütfen bir şablon seçin.');
+                    return;
+                }
+
+                $.getJSON('/Offers/GetTemplateItems?templateId=' + templateId, function(items) {
+                    if (!items || items.length === 0) {
+                        alert('Şablonda kalem bulunamadı.');
+                        return;
+                    }
+
+                    items.forEach(function(item) {
+                        addMaterial({
+                            name: item.name,
+                            brand: item.brand,
+                            quantity: item.quantity,
+                            unit: item.unit,
+                            unitPrice: item.unitPrice,
+                            source: item.source || 'AdminStock',
+                            adminPriceId: item.adminPriceId || null
+                        });
+                    });
+                }).fail(function() {
+                    alert('Şablon yüklenirken hata oluştu.');
+                });
+            });
+
             // FORM SUBMIT
             $('#offerForm').on('submit', function(e) {
                 console.log('Form submitting...');

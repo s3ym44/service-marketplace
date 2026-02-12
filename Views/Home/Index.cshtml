@@ -1,231 +1,585 @@
-﻿@{
-    ViewData["Title"] = "Ana Sayfa";
+@using ServiceMarketplace.Models
+@model List<IGrouping<dynamic, MainCategory>>
+
+@{
+    ViewData["Title"] = "Pazarix - Tadilat Pazaryeri";
+    ViewData["FullWidth"] = true;
+    Layout = "_Layout";
+    var packageCounts = ViewBag.PackageCounts as Dictionary<int, int> ?? new Dictionary<int, int>();
+    var searchQuery = ViewBag.SearchQuery as string ?? "";
+    var activeFilter = ViewBag.ActiveFilter as string ?? "all";
 }
 
-<div class="hero-section">
-    <div class="hero-content text-center">
-        <h1 class="hero-title">Pazarix</h1>
-        <p class="hero-subtitle">Boya, seramik ve alçıpan hizmetleri için ilanlar oluşturun ve en iyi teklifleri alın</p>
-        
-        <div class="hero-buttons mt-4">
-            @if (User.Identity?.IsAuthenticated == true)
-            {
-                @if (User.IsInRole("Customer"))
-                {
-                    <a asp-controller="Listings" asp-action="Create" class="btn btn-light btn-lg me-3">
-                        <i class="bi bi-plus-circle"></i> İlan Oluştur
-                    </a>
-                    <a asp-controller="Listings" asp-action="MyListings" class="btn btn-outline-light btn-lg">
-                        <i class="bi bi-list-ul"></i> İlanlarım
-                    </a>
-                }
-                else if (User.IsInRole("Supplier"))
-                {
-                    <a asp-controller="Listings" asp-action="OpenListings" class="btn btn-light btn-lg me-3">
-                        <i class="bi bi-search"></i> İş Bul
-                    </a>
-                    <a asp-controller="Offers" asp-action="MyOffers" class="btn btn-outline-light btn-lg">
-                        <i class="bi bi-envelope"></i> Tekliflerim
-                    </a>
-                }
+<!-- ========== HERO SECTION ========== -->
+<section class="sh-hero">
+    <div class="sh-hero-glow"></div>
+    <div class="container position-relative" style="z-index: 1;">
+        <div style="max-width: 700px;">
+            <div class="sh-hero-badge">
+                <span>🏆</span> Türkiye'nin Tadilat Pazaryeri
+            </div>
+            <h1 class="sh-hero-title">
+                Evinizi Hayalinizdeki
+                <span class="sh-hero-highlight">Yuvaya</span> Dönüştürün
+            </h1>
+            <p class="sh-hero-desc">
+                Tadilat paketinizi seçin, ölçülerinizi girin, onlarca firma ve ustadan teklif alın.
+            </p>
+        </div>
+
+        <!-- Search -->
+        <form asp-action="Index" method="get" style="max-width: 620px;">
+            <div class="sh-search-box">
+                <div style="flex: 1; position: relative;">
+                    <span class="sh-search-icon">🔍</span>
+                    <input type="text" name="search" value="@searchQuery"
+                           placeholder="Ne yaptırmak istiyorsunuz? (ör: mutfak, banyo, çatı...)"
+                           class="sh-search-input" />
+                </div>
+                <button type="submit" class="sh-search-btn">Ara</button>
+            </div>
+        </form>
+
+        <!-- Stats -->
+        <div class="row mt-5">
+            @{
+                int totalListings = (int)(ViewBag.TotalListings ?? 0);
+                int totalSuppliers = (int)(ViewBag.TotalSuppliers ?? 0);
+                int totalPackages = (int)(ViewBag.TotalPackages ?? 0);
+                var statsData = new[] {
+                    new { Icon = "✅", Value = totalListings + "+", Label = "Oluşturulan İlan" },
+                    new { Icon = "👷", Value = totalSuppliers + "+", Label = "Kayıtlı Usta & Firma" },
+                    new { Icon = "📦", Value = totalPackages.ToString(), Label = "Hazır Tadilat Paketi" },
+                    new { Icon = "⭐", Value = "%95", Label = "Müşteri Memnuniyeti" }
+                };
             }
-            else
+            @foreach (var stat in statsData)
             {
-                <a asp-controller="Account" asp-action="Register" class="btn btn-light btn-lg me-3">
-                    <i class="bi bi-person-plus"></i> Hemen Kayıt Ol
-                </a>
-                <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-lg">
-                    <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
-                </a>
+                <div class="col-6 col-md-3 mb-3">
+                    <div class="sh-stat-item">
+                        <div class="sh-stat-icon">@stat.Icon</div>
+                        <div>
+                            <div class="sh-stat-value">@stat.Value</div>
+                            <div class="sh-stat-label">@stat.Label</div>
+                        </div>
+                    </div>
+                </div>
             }
         </div>
     </div>
-</div>
+</section>
 
-<div class="container mt-5">
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="feature-card text-center p-4">
-                <div class="feature-icon">
-                    <i class="bi bi-palette"></i>
-                </div>
-                <h4>Boya Hizmetleri</h4>
-                <p class="text-muted">Profesyonel boya ustalarından teklif alın</p>
-            </div>
+<!-- ========== FILTER TABS ========== -->
+<section class="sh-filter-bar">
+    <div class="container" style="display: flex; gap: 4px; overflow-x: auto;">
+        @{
+            var filters = new[] {
+                new { Id = "all", Label = "Tümü", IconStr = "📋" },
+                new { Id = "IcMekan", Label = "İç Mekan", IconStr = "🏠" },
+                new { Id = "DisMekan", Label = "Dış Mekan", IconStr = "🏗️" },
+                new { Id = "Ticari", Label = "Ticari", IconStr = "🏢" }
+            };
+        }
+        @foreach (var tab in filters)
+        {
+            var isActive = activeFilter == tab.Id;
+            <a asp-action="Index" asp-route-filter="@tab.Id" asp-route-search="@searchQuery"
+               class="sh-filter-tab @(isActive ? "sh-filter-active" : "")">
+                <span>@tab.IconStr</span> @tab.Label
+            </a>
+        }
+    </div>
+</section>
+
+<!-- ========== CATEGORY GROUPS ========== -->
+<section class="container" style="padding: 40px 15px 80px;">
+    @if (!Model.Any())
+    {
+        <div style="text-align: center; padding: 80px 0; color: #94a3b8;">
+            <div style="font-size: 48px; margin-bottom: 16px;">🔍</div>
+            <h3 style="font-size: 20px; font-weight: 600; color: #475569;">Sonuç bulunamadı</h3>
+            <p>Farklı bir arama terimi deneyin</p>
         </div>
-        <div class="col-md-4">
-            <div class="feature-card text-center p-4">
-                <div class="feature-icon feature-icon-green">
-                    <i class="bi bi-grid-3x3"></i>
+    }
+    else
+    {
+        @foreach (var group in Model)
+        {
+            <div style="margin-bottom: 48px;">
+                <!-- Group Header -->
+                <div class="sh-group-header">
+                    <span style="font-size: 24px;">
+                        @(group.Key.GroupType == "IcMekan" ? "🏠" : group.Key.GroupType == "DisMekan" ? "🏗️" : "🏢")
+                    </span>
+                    <h2 class="sh-group-title">
+                        @group.Key.GroupTitle
+                    </h2>
+                    <span class="sh-group-count">
+                        @group.Count()
+                    </span>
                 </div>
-                <h4>Seramik İşleri</h4>
-                <p class="text-muted">Mutfak ve banyo seramik döşeme uzmanları</p>
+
+                <!-- Category Cards Grid -->
+                <div class="row g-4">
+                    @foreach (var cat in group)
+                    {
+                        var pCount = packageCounts.ContainsKey(cat.Id) ? packageCounts[cat.Id] : 0;
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                            <a asp-controller="ServicePackages" asp-action="Index" asp-route-categoryId="@cat.Id"
+                               style="text-decoration: none; display: block; height: 100%;">
+                                <div class="sh-category-card">
+                                    <!-- Image -->
+                                    <div class="sh-card-image">
+                                        @if (!string.IsNullOrEmpty(cat.ImageUrl))
+                                        {
+                                            <img src="@cat.ImageUrl" alt="@cat.Name" />
+                                        }
+                                        else
+                                        {
+                                            <div class="sh-card-placeholder">
+                                                @cat.Icon
+                                            </div>
+                                        }
+                                        <div class="sh-card-overlay"></div>
+                                        <div class="sh-card-badge">@pCount Paket</div>
+                                        <div class="sh-card-emoji">@cat.Icon</div>
+                                    </div>
+                                    <!-- Content -->
+                                    <div class="sh-card-content">
+                                        <h3 class="sh-card-title">@cat.Name</h3>
+                                        <p class="sh-card-desc">@cat.Description</p>
+                                        <div class="sh-card-footer">
+                                            <span class="sh-card-link">Paketleri Gör →</span>
+                                            <div style="display: flex; gap: 4px;">
+                                                <span class="sh-tag-material">Malzeme</span>
+                                                <span class="sh-tag-labor">İşçilik</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                </div>
             </div>
+        }
+    }
+</section>
+
+<!-- ========== NASIL ÇALIŞIR ========== -->
+<section class="sh-how-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="sh-section-title">Nasıl Çalışır?</h2>
+            <p style="font-size: 16px; color: #64748b; margin-top: 8px;">4 basit adımda evinizi yenileyin</p>
         </div>
-        <div class="col-md-4">
-            <div class="feature-card text-center p-4">
-                <div class="feature-icon feature-icon-orange">
-                    <i class="bi bi-building"></i>
+        <div class="row">
+            @{
+                var steps = new[] {
+                    new { Step = "1", Title = "Paket Seçin", Desc = "Mutfak, banyo, salon... İstediğiniz tadilat paketini seçin", Color = "#3b82f6" },
+                    new { Step = "2", Title = "Ölçüleri Girin", Desc = "Odanızın ölçülerini cm olarak girin, sistem metrajı hesaplasın", Color = "#8b5cf6" },
+                    new { Step = "3", Title = "Teklifleri Alın", Desc = "Onlarca firma ve ustadan detaylı fiyat teklifi alın", Color = "#F97316" },
+                    new { Step = "4", Title = "Karşılaştırın", Desc = "Marka, fiyat ve süreyi karşılaştırıp en uygununu seçin", Color = "#10b981" }
+                };
+            }
+            @foreach (var step in steps)
+            {
+                <div class="col-6 col-md-3 text-center mb-4">
+                    <div class="sh-step-circle" style="background: @(step.Color)15; color: @step.Color;">@step.Step</div>
+                    <h3 style="font-size: 18px; font-weight: 700; color: #1a2332; margin-bottom: 8px;">@step.Title</h3>
+                    <p style="font-size: 14px; color: #64748b; line-height: 1.6;">@step.Desc</p>
                 </div>
-                <h4>Alçıpan</h4>
-                <p class="text-muted">Asma tavan ve bölme duvar çözümleri</p>
-            </div>
+            }
         </div>
     </div>
+</section>
 
-    <div class="row mt-5">
-        <div class="col-12 text-center">
-            <h3 class="mb-4">Nasıl Çalışır?</h3>
-        </div>
-        <div class="col-md-4 text-center">
-            <div class="step-number">1</div>
-            <h5>İlan Oluşturun</h5>
-            <p class="text-muted">Projenizin detaylarını ve ölçülerini girin</p>
-        </div>
-        <div class="col-md-4 text-center">
-            <div class="step-number">2</div>
-            <h5>Teklifler Alın</h5>
-            <p class="text-muted">Tedarikçilerden teklifler gelsin</p>
-        </div>
-        <div class="col-md-4 text-center">
-            <div class="step-number">3</div>
-            <h5>En İyisini Seçin</h5>
-            <p class="text-muted">Teklifleri karşılaştırın ve uygun olanı seçin</p>
+<!-- ========== CTA ========== -->
+<section class="sh-cta-section">
+    <div class="container text-center" style="max-width: 700px;">
+        <h2 style="font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 12px;">Hemen Başlayın</h2>
+        <p style="font-size: 16px; color: #94a3b8; margin-bottom: 28px;">Ücretsiz kayıt olun, tadilat paketinizi seçin ve dakikalar içinde teklif almaya başlayın.</p>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <a asp-controller="Account" asp-action="Register"
+               class="sh-cta-primary">
+                Müşteri Olarak Kayıt Ol
+            </a>
+            <a asp-controller="Account" asp-action="Register"
+               class="sh-cta-secondary">
+                Usta / Firma Kaydı
+            </a>
         </div>
     </div>
-</div>
+</section>
 
+@section Styles {
 <style>
-    .hero-section {
-        background: linear-gradient(135deg, #1e3a5f 0%, #0f2847 100%);
-        margin: -1rem calc(-50vw + 50%) 0 calc(-50vw + 50%);
-        width: 100vw;
-        padding: 5rem 2rem;
-        color: white;
+    /* ===== HERO ===== */
+    .sh-hero {
+        background: linear-gradient(135deg, #1a2332 0%, #0f1923 60%, #1a2332 100%);
+        padding: 80px 0 60px;
         position: relative;
         overflow: hidden;
     }
-    
-    .hero-section::before {
-        content: '';
+    .sh-hero-glow {
         position: absolute;
-        top: -50%;
-        right: -50%;
-        width: 100%;
-        height: 200%;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-        animation: float 6s ease-in-out infinite;
+        top: 0; right: 0;
+        width: 50%; height: 100%;
+        background: radial-gradient(circle at 70% 50%, rgba(249,115,22,0.08) 0%, transparent 60%);
     }
-    
-    @@keyframes float {
-        0%, 100% { transform: translateY(0) rotate(0deg); }
-        50% { transform: translateY(-20px) rotate(5deg); }
-    }
-    
-    .hero-content {
-        position: relative;
-        z-index: 1;
-    }
-    
-    .hero-title {
-        font-size: 3.5rem;
-        font-weight: 800;
-        margin-bottom: 1rem;
-        text-shadow: 0 2px 20px rgba(0,0,0,0.2);
-    }
-    
-    .hero-subtitle {
-        font-size: 1.3rem;
-        opacity: 0.9;
-        max-width: 600px;
-        margin: 0 auto;
-    }
-    
-    .hero-buttons .btn {
-        padding: 0.875rem 2rem;
-        font-weight: 600;
-        border-radius: 50px;
-    }
-    
-    .btn-light {
-        background: #ff6b35;
-        color: white;
-    }
-    
-    .btn-light:hover {
-        background: #f7931e;
-        color: white;
-    }
-    
-    .btn-outline-light:hover {
-        background: rgba(255,255,255,0.2);
-    }
-    
-    .feature-card {
-        background: white;
+    .sh-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(249,115,22,0.12);
+        border: 1px solid rgba(249,115,22,0.25);
         border-radius: 20px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        padding: 6px 16px;
+        margin-bottom: 20px;
+        font-size: 13px;
+        color: #FB923C;
+        font-weight: 600;
+    }
+    .sh-hero-title {
+        font-size: 48px;
+        font-weight: 800;
+        color: #fff;
+        line-height: 1.15;
+        letter-spacing: -0.03em;
+        margin-bottom: 16px;
+    }
+    .sh-hero-highlight {
+        background: linear-gradient(135deg, #F97316, #FBBF24);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .sh-hero-desc {
+        font-size: 18px;
+        color: #94a3b8;
+        line-height: 1.6;
+        margin-bottom: 36px;
+    }
+
+    /* ===== SEARCH ===== */
+    .sh-search-box {
+        display: flex;
+        background: #fff;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    }
+    .sh-search-icon {
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 18px;
+        opacity: 0.4;
+    }
+    .sh-search-input {
+        width: 100%;
+        padding: 18px 20px 18px 52px;
+        border: none;
+        font-size: 15px;
+        outline: none;
+        box-sizing: border-box;
+        color: #1a2332;
+    }
+    .sh-search-btn {
+        padding: 0 32px;
+        background: linear-gradient(135deg, #F97316, #FB923C);
+        border: none;
+        color: #fff;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+    .sh-search-btn:hover {
+        background: linear-gradient(135deg, #ea6c0e, #f08a2e);
+    }
+
+    /* ===== STATS ===== */
+    .sh-stat-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+    .sh-stat-icon {
+        width: 44px; height: 44px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+    .sh-stat-value {
+        font-size: 22px;
+        font-weight: 800;
+        color: #fff;
+    }
+    .sh-stat-label {
+        font-size: 12px;
+        color: #64748b;
+    }
+
+    /* ===== FILTER TABS ===== */
+    .sh-filter-bar {
+        background: #fff;
+        border-bottom: 1px solid #e8ecf1;
+        position: sticky;
+        top: 0;
+        z-index: 90;
+    }
+    .sh-filter-tab {
+        padding: 16px 24px;
+        text-decoration: none;
+        border-bottom: 3px solid transparent;
+        color: #64748b;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+        transition: all 0.2s;
+    }
+    .sh-filter-tab:hover {
+        color: #F97316;
+    }
+    .sh-filter-active {
+        border-bottom-color: #F97316 !important;
+        color: #F97316 !important;
+        font-weight: 700 !important;
+    }
+
+    /* ===== GROUP HEADER ===== */
+    .sh-group-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+    .sh-group-title {
+        font-size: 24px;
+        font-weight: 800;
+        color: #1a2332;
+        letter-spacing: -0.02em;
+        margin: 0;
+    }
+    .sh-group-count {
+        background: #f1f5f9;
+        color: #64748b;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    /* ===== CATEGORY CARDS ===== */
+    .sh-category-card {
+        background: #fff;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+        border: 1px solid #e8ecf1;
+        cursor: pointer;
         transition: all 0.3s ease;
         height: 100%;
+        display: flex;
+        flex-direction: column;
     }
-    
-    .feature-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    .sh-category-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.1);
     }
-    
-    .feature-icon {
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(135deg, #1e3a5f 0%, #0f2847 100%);
+    .sh-category-card:hover img {
+        transform: scale(1.05);
+    }
+    .sh-card-image {
+        position: relative;
+        height: 180px;
+        overflow: hidden;
+    }
+    .sh-card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s;
+    }
+    .sh-card-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #1a2332, #2d3a4a);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+    }
+    .sh-card-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%);
+    }
+    .sh-card-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: rgba(255,255,255,0.95);
+        border-radius: 8px;
+        padding: 4px 10px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #F97316;
+    }
+    .sh-card-emoji {
+        position: absolute;
+        bottom: 12px;
+        left: 12px;
+        font-size: 32px;
+    }
+    .sh-card-content {
+        padding: 16px 20px 20px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .sh-card-title {
+        font-size: 17px;
+        font-weight: 700;
+        color: #1a2332;
+        margin-bottom: 6px;
+    }
+    .sh-card-desc {
+        font-size: 13px;
+        color: #64748b;
+        line-height: 1.5;
+        margin-bottom: 16px;
+        flex: 1;
+    }
+    .sh-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .sh-card-link {
+        font-size: 13px;
+        color: #F97316;
+        font-weight: 600;
+    }
+    .sh-tag-material {
+        background: #eff6ff;
+        color: #3b82f6;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 600;
+    }
+    .sh-tag-labor {
+        background: #f0fdf4;
+        color: #10b981;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 600;
+    }
+
+    /* ===== HOW IT WORKS ===== */
+    .sh-how-section {
+        background: #fff;
+        padding: 80px 0;
+        border-top: 1px solid #e8ecf1;
+    }
+    .sh-section-title {
+        font-size: 32px;
+        font-weight: 800;
+        color: #1a2332;
+    }
+    .sh-step-circle {
+        width: 64px;
+        height: 64px;
         border-radius: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 1.5rem;
-        font-size: 2rem;
-        color: white;
+        margin: 0 auto 16px;
+        font-size: 28px;
+        font-weight: 900;
     }
-    
-    .feature-icon-green {
-        background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+
+    /* ===== CTA ===== */
+    .sh-cta-section {
+        background: linear-gradient(135deg, #1a2332 0%, #0f1923 100%);
+        padding: 64px 0;
     }
-    
-    .feature-icon-orange {
-        background: linear-gradient(135deg, #ff8c42 0%, #ffb347 100%);
-    }
-    
-    .step-number {
-        width: 60px;
-        height: 60px;
-        background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
+    .sh-cta-primary {
+        padding: 14px 32px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #F97316, #FB923C);
+        color: #fff;
+        font-size: 16px;
         font-weight: 700;
-        color: white;
-        margin: 0 auto 1rem;
+        text-decoration: none;
+        box-shadow: 0 6px 24px rgba(249,115,22,0.3);
+        transition: all 0.2s;
     }
-    
+    .sh-cta-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 32px rgba(249,115,22,0.45);
+        color: #fff;
+    }
+    .sh-cta-secondary {
+        padding: 14px 32px;
+        border-radius: 12px;
+        border: 1px solid #475569;
+        color: #e2e8f0;
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .sh-cta-secondary:hover {
+        background: rgba(255,255,255,0.05);
+        color: #fff;
+    }
+
+    /* ===== RESPONSIVE ===== */
     @@media (max-width: 768px) {
-        .hero-title {
-            font-size: 2.5rem;
+        .sh-hero {
+            padding: 50px 0 40px;
         }
-        
-        .hero-subtitle {
-            font-size: 1.1rem;
+        .sh-hero-title {
+            font-size: 30px;
         }
-        
-        .hero-buttons .btn {
-            display: block;
+        .sh-hero-desc {
+            font-size: 15px;
+        }
+        .sh-search-box {
+            flex-direction: column;
+            border-radius: 12px;
+        }
+        .sh-search-input {
+            padding: 14px 14px 14px 44px;
+        }
+        .sh-search-btn {
+            padding: 14px;
+        }
+        .sh-group-title {
+            font-size: 20px;
+        }
+        .sh-card-image {
+            height: 150px;
+        }
+        .sh-section-title {
+            font-size: 24px;
+        }
+        .sh-cta-primary, .sh-cta-secondary {
             width: 100%;
-            margin-bottom: 1rem;
-        }
-        
-        .hero-buttons .btn.me-3 {
-            margin-right: 0 !important;
+            text-align: center;
         }
     }
 </style>
+}

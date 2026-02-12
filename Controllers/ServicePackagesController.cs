@@ -15,14 +15,29 @@ namespace ServiceMarketplace.Controllers
         }
 
         // GET: ServicePackages
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? categoryId = null)
         {
-            var packages = await _context.ServicePackages
+            var query = _context.ServicePackages
                 .Include(sp => sp.MainCategory)
-                .Where(sp => sp.IsActive)
+                .Where(sp => sp.IsActive);
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(sp => sp.MainCategoryId == categoryId.Value);
+                var category = await _context.MainCategories.FindAsync(categoryId.Value);
+                ViewBag.SelectedCategory = category?.Name;
+            }
+
+            var packages = await query
                 .OrderBy(sp => sp.MainCategory.DisplayOrder)
                 .ThenBy(sp => sp.Name)
                 .ToListAsync();
+
+            ViewBag.Categories = await _context.MainCategories
+                .Where(c => c.IsActive)
+                .OrderBy(c => c.DisplayOrder)
+                .ToListAsync();
+            ViewBag.SelectedCategoryId = categoryId;
 
             return View(packages);
         }

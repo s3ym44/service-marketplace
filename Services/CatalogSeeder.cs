@@ -10,56 +10,58 @@ namespace ServiceMarketplace.Services
     {
         public static async Task SeedMainCategoriesAsync(ApplicationDbContext context)
         {
-            if (context.MainCategories.Any())
+            // Showroom kategorileri: mevcut olanları güncelle, olmayanları ekle
+            // NOT: ID 1-4 mevcut veritabanı kayıtlarıdır, FK ilişkileri korunuyor
+            var allCategories = new List<MainCategory>
             {
-                Console.WriteLine("MainCategories already seeded.");
-                return;
-            }
+                // === İÇ MEKAN === (ID 1-4 mevcut, 5+ yeni)
+                new MainCategory { Id = 1, Name = "Mutfak Tadilat", Description = "Komple mutfak yenileme, dolap, tezgah, seramik", Icon = "🍳", GroupType = "IcMekan", GroupTitle = "İç Mekan Tadilatları", ImageUrl = "/images/categories/mutfak.jpg", DisplayOrder = 1, IsActive = true },
+                new MainCategory { Id = 2, Name = "Banyo Tadilat", Description = "Banyo renovasyon, fayans, vitrifiye, tesisat", Icon = "🚿", GroupType = "IcMekan", GroupTitle = "İç Mekan Tadilatları", ImageUrl = "/images/categories/banyo.jpg", DisplayOrder = 2, IsActive = true },
+                new MainCategory { Id = 3, Name = "Salon Tadilat", Description = "Salon duvar, zemin, tavan ve aydınlatma", Icon = "🛋️", GroupType = "IcMekan", GroupTitle = "İç Mekan Tadilatları", ImageUrl = "/images/categories/salon.jpg", DisplayOrder = 3, IsActive = true },
+                new MainCategory { Id = 4, Name = "Yatak Odası Tadilat", Description = "Yatak odası duvar, zemin, gardırop", Icon = "🛏️", GroupType = "IcMekan", GroupTitle = "İç Mekan Tadilatları", ImageUrl = "/images/categories/yatak.jpg", DisplayOrder = 4, IsActive = true },
+                new MainCategory { Id = 5, Name = "WC Tadilat", Description = "WC yenileme, klozet, lavabo değişimi", Icon = "🚽", GroupType = "IcMekan", GroupTitle = "İç Mekan Tadilatları", ImageUrl = "/images/categories/wc.jpg", DisplayOrder = 5, IsActive = true },
+                new MainCategory { Id = 6, Name = "Hol Tadilat", Description = "Giriş holü, vestiyer, zemin kaplama", Icon = "🚪", GroupType = "IcMekan", GroupTitle = "İç Mekan Tadilatları", ImageUrl = "/images/categories/hol.jpg", DisplayOrder = 6, IsActive = true },
+                new MainCategory { Id = 7, Name = "Çocuk Odası Tadilat", Description = "Çocuk odası güvenli tasarım ve renklendirme", Icon = "🧸", GroupType = "IcMekan", GroupTitle = "İç Mekan Tadilatları", ImageUrl = "/images/categories/cocuk.jpg", DisplayOrder = 7, IsActive = true },
+                new MainCategory { Id = 8, Name = "Oturma Odası Tadilat", Description = "Oturma odası dekorasyon ve yenileme", Icon = "📺", GroupType = "IcMekan", GroupTitle = "İç Mekan Tadilatları", ImageUrl = "/images/categories/oturma.jpg", DisplayOrder = 8, IsActive = true },
+                new MainCategory { Id = 9, Name = "Balkon Tadilat", Description = "Balkon cam, zemin, tavan kapatma", Icon = "🌿", GroupType = "IcMekan", GroupTitle = "İç Mekan Tadilatları", ImageUrl = "/images/categories/balkon.jpg", DisplayOrder = 9, IsActive = true },
+                new MainCategory { Id = 10, Name = "Merdiven Boşluğu Tadilat", Description = "Merdiven boşluğu boya, aydınlatma", Icon = "🪜", GroupType = "IcMekan", GroupTitle = "İç Mekan Tadilatları", ImageUrl = "/images/categories/merdiven.jpg", DisplayOrder = 10, IsActive = true },
 
-            var categories = new List<MainCategory>
-            {
-                new MainCategory
-                {
-                    Id = 1,
-                    Name = "Mutfak Tadilatı",
-                    Icon = "bi-egg-fried",
-                    Description = "Mutfak dolabı, tezgah, seramik ve kapsamlı mutfak yenileme işleri",
-                    DisplayOrder = 1,
-                    IsActive = true
-                },
-                new MainCategory
-                {
-                    Id = 2,
-                    Name = "Banyo Tadilatı",
-                    Icon = "bi-droplet",
-                    Description = "Banyo seramiği, tesisat, armatür ve kapsamlı banyo yenileme işleri",
-                    DisplayOrder = 2,
-                    IsActive = true
-                },
-                new MainCategory
-                {
-                    Id = 3,
-                    Name = "Salon Tadilatı",
-                    Icon = "bi-tv",
-                    Description = "Salon boya, parke, alçıpan ve dekoratif tadilat işleri",
-                    DisplayOrder = 3,
-                    IsActive = true
-                },
-                new MainCategory
-                {
-                    Id = 4,
-                    Name = "Yatak Odası Tadilatı",
-                    Icon = "bi-moon-stars",
-                    Description = "Yatak odası boya, dolap ve genel tadilat işleri",
-                    DisplayOrder = 4,
-                    IsActive = true
-                }
+                // === DIŞ MEKAN ===
+                new MainCategory { Id = 11, Name = "Cephe Kaplama", Description = "Dış cephe mantolama, kaplama, panel", Icon = "🧱", GroupType = "DisMekan", GroupTitle = "Dış Mekan Tadilatları", ImageUrl = "/images/categories/cephe.jpg", DisplayOrder = 11, IsActive = true },
+                new MainCategory { Id = 12, Name = "Boya & Sıva İşleri", Description = "Dış cephe boya, sıva, dekoratif kaplama", Icon = "🎨", GroupType = "DisMekan", GroupTitle = "Dış Mekan Tadilatları", ImageUrl = "/images/categories/boya.jpg", DisplayOrder = 12, IsActive = true },
+                new MainCategory { Id = 13, Name = "Çatı Onarım", Description = "Çatı tamiri, kiremit değişimi", Icon = "🏚️", GroupType = "DisMekan", GroupTitle = "Dış Mekan Tadilatları", ImageUrl = "/images/categories/cati.jpg", DisplayOrder = 13, IsActive = true },
+                new MainCategory { Id = 14, Name = "Çatı İzolasyon", Description = "Isı ve su izolasyonu", Icon = "🛡️", GroupType = "DisMekan", GroupTitle = "Dış Mekan Tadilatları", ImageUrl = "/images/categories/izolasyon.jpg", DisplayOrder = 14, IsActive = true },
+                new MainCategory { Id = 15, Name = "Bahçe Düzenleme", Description = "Peyzaj, çim, bitki, taş kaplama", Icon = "🌳", GroupType = "DisMekan", GroupTitle = "Dış Mekan Tadilatları", ImageUrl = "/images/categories/bahce.jpg", DisplayOrder = 15, IsActive = true },
+                new MainCategory { Id = 16, Name = "Havuz İmalatı", Description = "Havuz yapım, onarım, bakım", Icon = "🏊", GroupType = "DisMekan", GroupTitle = "Dış Mekan Tadilatları", ImageUrl = "/images/categories/havuz.jpg", DisplayOrder = 16, IsActive = true },
+
+                // === TİCARİ ===
+                new MainCategory { Id = 17, Name = "Ofis & İş Yeri Tadilat", Description = "Ofis bölme, zemin, tavan, elektrik", Icon = "💼", GroupType = "Ticari", GroupTitle = "Ticari & Ofis", ImageUrl = "/images/categories/ofis.jpg", DisplayOrder = 17, IsActive = true },
             };
 
-            await context.MainCategories.AddRangeAsync(categories);
+            foreach (var cat in allCategories)
+            {
+                var existing = await context.MainCategories.FindAsync(cat.Id);
+                if (existing != null)
+                {
+                    // Mevcut kaydı güncelle
+                    existing.Name = cat.Name;
+                    existing.Description = cat.Description;
+                    existing.Icon = cat.Icon;
+                    existing.GroupType = cat.GroupType;
+                    existing.GroupTitle = cat.GroupTitle;
+                    existing.ImageUrl = cat.ImageUrl;
+                    existing.DisplayOrder = cat.DisplayOrder;
+                    existing.IsActive = cat.IsActive;
+                }
+                else
+                {
+                    // Yeni kayıt ekle
+                    await context.MainCategories.AddAsync(cat);
+                }
+            }
+
             await context.SaveChangesAsync();
-            
-            Console.WriteLine($"✓ {categories.Count} MainCategory seeded successfully!");
+            Console.WriteLine($"✓ {allCategories.Count} MainCategory seeded/updated successfully!");
         }
 
         public static async Task SeedRecipeTemplatesAsync(ApplicationDbContext context)

@@ -59,7 +59,7 @@ namespace ServiceMarketplace.Data
             // Package system relationships
             modelBuilder.Entity<ServicePackage>()
                 .HasOne(sp => sp.MainCategory)
-                .WithMany()
+                .WithMany(mc => mc.ServicePackages)
                 .HasForeignKey(sp => sp.MainCategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 

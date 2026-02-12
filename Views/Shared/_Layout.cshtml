@@ -13,79 +13,64 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Pazarix</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Menüyü aç/kapat">
-                    <span class="navbar-toggler-icon"></span>
+        <nav class="navbar navbar-expand-lg" style="background: #1a2332; padding: 0;">
+            <div class="container">
+                <a class="navbar-brand py-2" asp-controller="Home" asp-action="Index" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+                    <div style="width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #F97316, #FB923C); display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff; font-size: 18px;">P</div>
+                    <span style="color: #fff; font-size: 20px; font-weight: 700;">Pazarix</span>
+                </a>
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                        aria-controls="mainNavbar" aria-expanded="false" aria-label="Menüyü aç/kapat">
+                    <i class="bi bi-list" style="color: #fff; font-size: 24px;"></i>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                <div class="collapse navbar-collapse" id="mainNavbar">
+                    <ul class="navbar-nav ms-auto" style="gap: 4px; align-items: center;">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Ana Sayfa</a>
+                            <a class="nav-link px-3 py-3" asp-controller="Home" asp-action="Index" style="color: #94a3b8; font-size: 14px;">Ana Sayfa</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="ServicePackages" asp-action="Index">
-                                <i class="bi bi-box-seam"></i> Paketler
-                            </a>
+                            <a class="nav-link px-3 py-3" asp-controller="ServicePackages" asp-action="Index" style="color: #94a3b8; font-size: 14px;">Paketler</a>
                         </li>
-                        @if (User.IsInRole("Customer"))
+                        @if (User.Identity?.IsAuthenticated == true)
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Listings" asp-action="MyListings">
-                                    <i class="bi bi-list-ul"></i> İlanlarım
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Listings" asp-action="Create">
-                                    <i class="bi bi-plus-circle"></i> İlan Oluştur
-                                </a>
-                            </li>
-                        }
-                        @if (User.IsInRole("MaterialSupplier") || User.IsInRole("LaborProvider"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Listings" asp-action="OpenListings">
-                                    <i class="bi bi-search"></i> İş Bul
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Offers" asp-action="MyOffers">
-                                    <i class="bi bi-envelope"></i> Tekliflerim
-                                </a>
-                            </li>
-                        }
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Index">
-                                    <i class="bi bi-gear"></i> Yönetim Paneli
-                                </a>
-                            </li>
-                        }
-                    </ul>
-                    <ul class="navbar-nav">
-                        @if (User.Identity.IsAuthenticated)
-                        {
+                            @if (User.IsInRole("Customer"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link px-3 py-3" asp-controller="Listings" asp-action="MyListings" style="color: #94a3b8; font-size: 14px;">İlanlarım</a>
+                                </li>
+                            }
+                            @if (User.IsInRole("MaterialSupplier") || User.IsInRole("LaborProvider"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link px-3 py-3" asp-controller="Listings" asp-action="OpenListings" style="color: #94a3b8; font-size: 14px;">İş Bul</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link px-3 py-3" asp-controller="SupplierCatalog" asp-action="Index" style="color: #94a3b8; font-size: 14px;">Kataloğum</a>
+                                </li>
+                            }
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link px-3 py-3" asp-controller="Admin" asp-action="Index" style="color: #94a3b8; font-size: 14px;">Admin Panel</a>
+                                </li>
+                            }
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown">
-                                    <i class="bi bi-person-circle"></i> @User.Identity.Name
+                                <a class="nav-link dropdown-toggle px-3 py-3" href="#" role="button" data-bs-toggle="dropdown" style="color: #e2e8f0; font-size: 14px;">
+                                    <i class="bi bi-person-circle"></i> @User.Identity?.Name
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-end">
+                                <ul class="dropdown-menu dropdown-menu-end" style="border: 1px solid #e8ecf1;">
                                     @if (User.IsInRole("Admin"))
                                     {
                                         <li><a class="dropdown-item" asp-controller="Admin" asp-action="Categories">Kategoriler</a></li>
                                         <li><a class="dropdown-item" asp-controller="Templates" asp-action="Index">Şablonlar</a></li>
-                                        <li><a class="dropdown-item" asp-controller="Listings" asp-action="Index">İlanlar</a></li>
                                         <li><hr class="dropdown-divider"></li>
                                     }
-                                    <li><span class="dropdown-item-text text-muted small">Giriş yapan: @User.Identity.Name</span></li>
+                                    <li><span class="dropdown-item-text text-muted small">@User.Identity?.Name</span></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <form asp-controller="Account" asp-action="Logout" method="post">
                                             @Html.AntiForgeryToken()
-                                            <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right"></i> Çıkış</button>
+                                            <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right"></i> Çıkış</button>
                                         </form>
                                     </li>
                                 </ul>
@@ -94,13 +79,12 @@
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">
-                                    <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
-                                </a>
+                                <a class="nav-link px-3 py-3" asp-controller="Account" asp-action="Login" style="color: #94a3b8; font-size: 14px;">Giriş Yap</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">
-                                    <i class="bi bi-person-plus"></i> Kayıt Ol
+                            <li class="nav-item ms-1">
+                                <a asp-controller="Account" asp-action="Register"
+                                   style="padding: 8px 18px; border-radius: 8px; background: linear-gradient(135deg, #F97316, #FB923C); color: #fff; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-block;">
+                                    Ücretsiz Kayıt
                                 </a>
                             </li>
                         }
@@ -109,11 +93,20 @@
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+    @if (ViewData["FullWidth"] != null)
+    {
+        <main role="main">
             @RenderBody()
         </main>
-    </div>
+    }
+    else
+    {
+        <div class="container">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+    }
 
     <footer class="border-top footer text-muted">
         <div class="container">

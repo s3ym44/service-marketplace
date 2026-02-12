@@ -4,205 +4,238 @@
     ViewData["Title"] = Model.Name;
 }
 
-<div class="container my-5">
-    <!-- Package Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Ana Sayfa</a></li>
-                    <li class="breadcrumb-item"><a asp-action="Index">Paketler</a></li>
-                    <li class="breadcrumb-item active">@Model.Code</li>
-                </ol>
-            </nav>
-        </div>
-    </div>
+<!-- Breadcrumb -->
+<div class="spd-breadcrumb">
+    <a asp-action="Index" class="spd-breadcrumb-link">Paketler</a>
+    <span class="spd-breadcrumb-sep">›</span>
+    <a asp-action="Index" class="spd-breadcrumb-link">@Model.MainCategory.Name</a>
+    <span class="spd-breadcrumb-sep">›</span>
+    <span class="spd-breadcrumb-current">@Model.Code</span>
+</div>
 
-    <div class="row mb-5">
-        <div class="col-lg-8">
-            <div class="d-flex align-items-center mb-3">
-                <h1 class="display-5 mb-0 me-3">@Model.Name</h1>
-                <span class="badge bg-primary fs-6">@Model.Code</span>
-            </div>
-            <p class="text-muted mb-3">
-                <i class="bi bi-tag me-2"></i>@Model.MainCategory.Name
-            </p>
-            <p class="lead">@Model.Description</p>
-        </div>
-    </div>
+<!-- Main Content: 2-column layout -->
+<div class="row g-4">
+    <!-- Left Column -->
+    <div class="col-lg-7 col-xl-8">
 
-    <!-- Package Items -->
-    <div class="row mb-5">
-        <div class="col-12">
-            <h3 class="mb-4">
-                <i class="bi bi-list-check me-2"></i>Paket İçeriği
+        <!-- Package Title -->
+        <div class="mb-4">
+            <span class="spd-code-badge">@Model.Code</span>
+            <h1 class="spd-title">@Model.Name</h1>
+        </div>
+
+        <!-- Images -->
+        <div class="spd-images-grid mb-4">
+            @if (!string.IsNullOrEmpty(Model.ThumbnailImage))
+            {
+                <div class="spd-image-card">
+                    <img src="@Model.ThumbnailImage" alt="@Model.Name" />
+                    <div class="spd-image-overlay"></div>
+                </div>
+            }
+            else
+            {
+                <div class="spd-image-card">
+                    <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop" alt="@Model.Name 1" />
+                    <div class="spd-image-overlay"></div>
+                </div>
+                <div class="spd-image-card">
+                    <img src="https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=600&h=400&fit=crop" alt="@Model.Name 2" />
+                    <div class="spd-image-overlay"></div>
+                </div>
+            }
+        </div>
+
+        <!-- Floor Plan SVG -->
+        <div class="spd-floorplan-card mb-4">
+            <svg width="260" height="160" viewBox="0 0 260 160">
+                <rect x="10" y="10" width="240" height="140" fill="none" stroke="#cbd5e1" stroke-width="2" rx="4" stroke-dasharray="6 3" />
+                <rect x="20" y="20" width="60" height="30" fill="#3b82f6" opacity="0.15" stroke="#3b82f6" stroke-width="1.5" rx="3" />
+                <text x="50" y="39" text-anchor="middle" font-size="9" fill="#3b82f6" font-weight="600">Dolap</text>
+                <rect x="100" y="20" width="80" height="20" fill="#f97316" opacity="0.15" stroke="#f97316" stroke-width="1.5" rx="3" />
+                <text x="140" y="34" text-anchor="middle" font-size="9" fill="#f97316" font-weight="600">Tezgah</text>
+                <rect x="20" y="70" width="220" height="70" fill="#10b981" opacity="0.08" stroke="#10b981" stroke-width="1.5" rx="3" stroke-dasharray="4 2" />
+                <text x="130" y="110" text-anchor="middle" font-size="9" fill="#10b981" font-weight="600">Seramik Alanı</text>
+                <line x1="20" y1="152" x2="240" y2="152" stroke="#94a3b8" stroke-width="1" />
+                <text x="130" y="148" text-anchor="middle" font-size="8" fill="#64748b">Genişlik</text>
+                <line x1="252" y1="20" x2="252" y2="140" stroke="#94a3b8" stroke-width="1" />
+                <text x="248" y="85" text-anchor="middle" font-size="8" fill="#64748b" transform="rotate(-90 248 85)">Yükseklik</text>
+            </svg>
+            <p class="spd-floorplan-caption">Karikatür Mutfak – Ölçü Şeması</p>
+        </div>
+
+        <!-- Description -->
+        <p class="spd-description">@Model.Description</p>
+
+        <!-- Package Content -->
+        <div class="spd-content-card">
+            <h3 class="spd-content-title">
+                <span class="spd-content-icon">📦</span>
+                Paket İçeriği
             </h3>
-            
-            <div class="card shadow-sm">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Sıra</th>
-                                    <th>Kategori</th>
-                                    <th>Kalem Adı</th>
-                                    <th>Tür</th>
-                                    <th>Birim</th>
-                                    <th>Zorunluluk</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in Model.Items.OrderBy(i => i.DisplayOrder))
-                                {
-                                    <tr>
-                                        <td>@item.DisplayOrder</td>
-                                        <td>
-                                            <span class="badge bg-secondary">@item.Category</span>
-                                        </td>
-                                        <td>
-                                            <strong>@item.Name</strong>
-                                        </td>
-                                        <td>
-                                            @if (item.ItemType == "Material")
-                                            {
-                                                <span class="badge bg-info">
-                                                    <i class="bi bi-box me-1"></i>Malzeme
-                                                </span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-warning">
-                                                    <i class="bi bi-tools me-1"></i>İşçilik
-                                                </span>
-                                            }
-                                        </td>
-                                        <td>
-                                            <code>@item.Unit</code>
-                                        </td>
-                                        <td>
-                                            @if (item.IsRequired)
-                                            {
-                                                <span class="text-danger">
-                                                    <i class="bi bi-check-circle-fill me-1"></i>Zorunlu
-                                                </span>
-                                            }
-                                            else
-                                            {
-                                                <span class="text-muted">
-                                                    <i class="bi bi-circle me-1"></i>Opsiyonel
-                                                </span>
-                                            }
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
+            <div class="spd-items-list">
+                @{ var items = Model.Items.OrderBy(i => i.DisplayOrder).ToList(); }
+                @for (int i = 0; i < items.Count; i++)
+                {
+                    var item = items[i];
+                    var isLast = i == items.Count - 1;
+                    <div class="spd-item @(isLast ? "" : "spd-item-bordered")">
+                        <div class="spd-item-dot @(item.ItemType == "Material" ? "spd-dot-material" : "spd-dot-labor")"></div>
+                        <span class="spd-item-name">@item.Name</span>
+                        <span class="spd-item-badge @(item.ItemType == "Material" ? "spd-badge-material" : "spd-badge-labor")">
+                            @(item.ItemType == "Material" ? "Malzeme" : "İşçilik")
+                        </span>
                     </div>
-                </div>
+                }
             </div>
         </div>
     </div>
 
-    <!-- Calculator Section -->
-    <div class="row mb-5">
-        <div class="col-lg-8">
-            <div class="card shadow-sm border-primary">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
-                        <i class="bi bi-calculator me-2"></i>Ölçü Hesaplayıcı
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted mb-4">
-                        Alanınızın ölçülerini girin, sistem otomatik olarak gerekli miktarları hesaplasın.
-                    </p>
-                    
-                    <form id="calculatorForm">
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-4">
-                                <label class="form-label">Genişlik (cm)</label>
-                                <input type="number" class="form-control" id="width" placeholder="320" min="0" step="1">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Yükseklik (cm)</label>
-                                <input type="number" class="form-control" id="height" placeholder="420" min="0" step="1">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Derinlik (cm)</label>
-                                <input type="number" class="form-control" id="depth" placeholder="260" min="0" step="1">
-                            </div>
-                        </div>
-                        
-                        <div class="d-grid">
-                            <button type="button" class="btn btn-primary" id="calculateBtn">
-                                <i class="bi bi-calculator me-2"></i>Hesapla
-                            </button>
-                        </div>
-                    </form>
-                    
-                    <div id="calculationResults" class="mt-4 d-none">
-                        <hr>
-                        <h5 class="mb-3">Hesaplanan Değerler:</h5>
-                        <div class="alert alert-info">
-                            <div id="resultsContent"></div>
-                        </div>
+    <!-- Right Column - Calculator (sticky) -->
+    <div class="col-lg-5 col-xl-4">
+        <div class="spd-sidebar-sticky">
+
+            <!-- Measurement Input Card -->
+            <div class="spd-calc-card mb-3">
+                <h3 class="spd-calc-title">
+                    Mutfak Ölçüleri <span class="spd-calc-unit">(cm)</span>
+                </h3>
+                <div class="row g-2">
+                    <div class="col-4">
+                        <label class="spd-input-label">GENİŞLİK</label>
+                        <input type="number" id="spdWidth" class="spd-input spd-input-blue" value="320" />
+                    </div>
+                    <div class="col-4">
+                        <label class="spd-input-label">YÜKSEKLİK</label>
+                        <input type="number" id="spdHeight" class="spd-input spd-input-purple" value="420" />
+                    </div>
+                    <div class="col-4">
+                        <label class="spd-input-label">DERİNLİK</label>
+                        <input type="number" id="spdDepth" class="spd-input spd-input-green" value="260" />
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Action Buttons -->
-    <div class="row">
-        <div class="col-12">
-            <a asp-controller="Listings" asp-action="CreateWithPackage" asp-route-packageId="@Model.Id" 
-               class="btn btn-success btn-lg">
-                <i class="bi bi-plus-circle me-2"></i>Bu Paket ile İlan Oluştur
+            <!-- Metrics Card -->
+            <div class="spd-metrics-card mb-3" id="metricsCard">
+                <h4 class="spd-metrics-title">
+                    <span>📐</span> Tahmini Metraj (Referans)
+                </h4>
+                <div class="spd-metrics-list">
+                    <div class="spd-metric-row">
+                        <span class="spd-metric-label">Dolap Alanı:</span>
+                        <span class="spd-metric-value spd-color-blue">
+                            <span id="metricDolap">0</span> <span class="spd-metric-unit">m²</span>
+                        </span>
+                    </div>
+                    <div class="spd-metric-row">
+                        <span class="spd-metric-label">Tezgah Uzunluğu:</span>
+                        <span class="spd-metric-value spd-color-orange">
+                            <span id="metricTezgah">0</span> <span class="spd-metric-unit">m</span>
+                        </span>
+                    </div>
+                    <div class="spd-metric-row">
+                        <span class="spd-metric-label">Seramik Alanı:</span>
+                        <span class="spd-metric-value spd-color-green">
+                            <span id="metricSeramik">0</span> <span class="spd-metric-unit">m²</span>
+                        </span>
+                    </div>
+                </div>
+                <p class="spd-metrics-disclaimer">
+                    *Bu hesaplama bilgilendirme amaçlıdır, kesin fiyat değildir.
+                </p>
+            </div>
+
+            <!-- CTA Button -->
+            <a asp-controller="Listings" asp-action="CreateWithPackage" asp-route-packageId="@Model.Id"
+               class="spd-cta-btn" id="ctaButton">
+                TEKLİF AL
             </a>
-            <a asp-action="Index" class="btn btn-outline-secondary btn-lg ms-2">
-                <i class="bi bi-arrow-left me-2"></i>Paketlere Dön
-            </a>
+
+            <!-- Trust Badges -->
+            <div class="spd-trust-badges">
+                <div class="spd-trust-item"><span>🔒</span> Güvenli</div>
+                <div class="spd-trust-item"><span>⚡</span> Hızlı Teklif</div>
+                <div class="spd-trust-item"><span>✓</span> Ücretsiz</div>
+            </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        document.getElementById('calculateBtn').addEventListener('click', function() {
-            const width = parseFloat(document.getElementById('width').value) || 0;
-            const height = parseFloat(document.getElementById('height').value) || 0;
-            const depth = parseFloat(document.getElementById('depth').value) || 0;
-            
-            if (width === 0 || height === 0) {
-                alert('Lütfen en az genişlik ve yükseklik değerlerini girin.');
-                return;
+        (function () {
+            const widthInput = document.getElementById('spdWidth');
+            const heightInput = document.getElementById('spdHeight');
+            const depthInput = document.getElementById('spdDepth');
+            const metricDolap = document.getElementById('metricDolap');
+            const metricTezgah = document.getElementById('metricTezgah');
+            const metricSeramik = document.getElementById('metricSeramik');
+            const metricsCard = document.getElementById('metricsCard');
+
+            function calculateMetrics() {
+                const w = parseFloat(widthInput.value) || 0;
+                const h = parseFloat(heightInput.value) || 0;
+                const d = parseFloat(depthInput.value) || 0;
+
+                if (!w || !h || !d) {
+                    metricsCard.style.opacity = '0.4';
+                    metricDolap.textContent = '–';
+                    metricTezgah.textContent = '–';
+                    metricSeramik.textContent = '–';
+                    return;
+                }
+
+                // Animate
+                metricsCard.style.opacity = '0.5';
+                metricsCard.style.transform = 'scale(0.98)';
+
+                setTimeout(function () {
+                    const dolapAlani = ((w + d * 2) * h) / 10000;
+                    const tezgahUzunlugu = (w + d) / 100;
+                    const seramikAlani = ((w * h + d * h * 2) * 1.1) / 10000;
+
+                    metricDolap.textContent = dolapAlani.toFixed(1);
+                    metricTezgah.textContent = tezgahUzunlugu.toFixed(1);
+                    metricSeramik.textContent = seramikAlani.toFixed(1);
+
+                    metricsCard.style.opacity = '1';
+                    metricsCard.style.transform = 'scale(1)';
+                }, 300);
             }
-            
-            // Basic calculations (can be customized per package)
-            const areaM2 = (width * height) / 10000; // cm² to m²
-            const lengthM = width / 100; // cm to m
-            const wallAreaM2 = ((width * height * 2) + (depth * height * 2)) / 10000;
-            
-            const resultsHtml = `
-                <div class="row">
-                    <div class="col-md-4">
-                        <strong>Taban Alanı:</strong><br>
-                        <span class="fs-5 text-primary">${areaM2.toFixed(2)} m²</span>
-                    </div>
-                    <div class="col-md-4">
-                        <strong>Uzunluk:</strong><br>
-                        <span class="fs-5 text-primary">${lengthM.toFixed(2)} m</span>
-                    </div>
-                    <div class="col-md-4">
-                        <strong>Duvar Alanı:</strong><br>
-                        <span class="fs-5 text-primary">${wallAreaM2.toFixed(2)} m²</span>
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('resultsContent').innerHTML = resultsHtml;
-            document.getElementById('calculationResults').classList.remove('d-none');
-        });
+
+            // Debounced auto-calculate on input
+            let debounceTimer;
+            function onInputChange() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(calculateMetrics, 400);
+            }
+
+            widthInput.addEventListener('input', onInputChange);
+            heightInput.addEventListener('input', onInputChange);
+            depthInput.addEventListener('input', onInputChange);
+
+            // Focus color effects
+            widthInput.addEventListener('focus', function () { this.style.borderColor = '#3b82f6'; });
+            widthInput.addEventListener('blur', function () { this.style.borderColor = '#e8ecf1'; });
+            heightInput.addEventListener('focus', function () { this.style.borderColor = '#8b5cf6'; });
+            heightInput.addEventListener('blur', function () { this.style.borderColor = '#e8ecf1'; });
+            depthInput.addEventListener('focus', function () { this.style.borderColor = '#10b981'; });
+            depthInput.addEventListener('blur', function () { this.style.borderColor = '#e8ecf1'; });
+
+            // CTA hover effects
+            const ctaBtn = document.getElementById('ctaButton');
+            ctaBtn.addEventListener('mouseover', function () {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 10px 32px rgba(249,115,22,0.45)';
+            });
+            ctaBtn.addEventListener('mouseout', function () {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 6px 24px rgba(249,115,22,0.35)';
+            });
+
+            // Initial calculation
+            calculateMetrics();
+        })();
     </script>
 }

@@ -506,3 +506,446 @@ h2 i {
 .form-floating>.form-control:focus::placeholder {
   text-align: start;
 }
+
+/* ========================================
+   ServicePackage Details Page
+   ======================================== */
+
+/* Breadcrumb */
+.spd-breadcrumb {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 20px;
+}
+
+.spd-breadcrumb-link {
+  color: var(--secondary-color);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.spd-breadcrumb-link:hover {
+  color: var(--accent-color);
+  text-decoration: underline;
+}
+
+.spd-breadcrumb-sep {
+  color: #94a3b8;
+}
+
+.spd-breadcrumb-current {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* Package Title */
+.spd-code-badge {
+  display: inline-block;
+  background: var(--primary-gradient);
+  color: #fff;
+  padding: 5px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.spd-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* Image Grid */
+.spd-images-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.spd-image-card {
+  border-radius: 14px;
+  overflow: hidden;
+  height: 220px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  position: relative;
+}
+
+.spd-image-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.spd-image-card:hover img {
+  transform: scale(1.05);
+}
+
+.spd-image-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.15) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+/* Floor Plan */
+.spd-floorplan-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 32px;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e8ecf1;
+  text-align: center;
+}
+
+.spd-floorplan-card:hover {
+  transform: none;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
+}
+
+.spd-floorplan-caption {
+  color: #64748b;
+  font-size: 13px;
+  margin-top: 12px;
+  font-style: italic;
+  margin-bottom: 0;
+}
+
+/* Description */
+.spd-description {
+  color: #475569;
+  font-size: 15px;
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+/* Package Content Card */
+.spd-content-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 28px 32px;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e8ecf1;
+}
+
+.spd-content-card:hover {
+  transform: none;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.spd-content-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.spd-content-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #F97316, #FB923C);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+/* Items List */
+.spd-items-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.spd-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+}
+
+.spd-item-bordered {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.spd-item-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.spd-dot-material {
+  background: #3b82f6;
+}
+
+.spd-dot-labor {
+  background: #10b981;
+}
+
+.spd-item-name {
+  font-size: 15px;
+  color: #334155;
+  flex: 1;
+}
+
+.spd-item-badge {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.spd-badge-material {
+  background: #eff6ff;
+  color: #3b82f6;
+}
+
+.spd-badge-labor {
+  background: #f0fdf4;
+  color: #10b981;
+}
+
+/* Sidebar Sticky */
+.spd-sidebar-sticky {
+  position: sticky;
+  top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Calculator Card */
+.spd-calc-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e8ecf1;
+}
+
+.spd-calc-card:hover {
+  transform: none;
+}
+
+.spd-calc-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+}
+
+.spd-calc-unit {
+  color: #94a3b8;
+  font-weight: 400;
+  font-size: 14px;
+}
+
+.spd-input-label {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.spd-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 2px solid #e8ecf1;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+  text-align: center;
+  background: #fafbfc;
+}
+
+.spd-input:focus {
+  box-shadow: none;
+}
+
+.spd-input-blue:focus {
+  border-color: #3b82f6;
+}
+
+.spd-input-purple:focus {
+  border-color: #8b5cf6;
+}
+
+.spd-input-green:focus {
+  border-color: #10b981;
+}
+
+/* Metrics Card */
+.spd-metrics-card {
+  background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);
+  border-radius: 16px;
+  padding: 24px 28px;
+  border: 1px solid #dbeafe;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.spd-metrics-card:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.spd-metrics-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e40af;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spd-metrics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.spd-metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.spd-metric-label {
+  font-size: 14px;
+  color: #475569;
+}
+
+.spd-metric-value {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.spd-metric-unit {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.spd-color-blue {
+  color: #3b82f6;
+}
+
+.spd-color-orange {
+  color: #f97316;
+}
+
+.spd-color-green {
+  color: #10b981;
+}
+
+.spd-metrics-disclaimer {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 14px;
+  font-style: italic;
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+/* CTA Button */
+.spd-cta-btn {
+  display: block;
+  width: 100%;
+  padding: 18px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 24px rgba(249, 115, 22, 0.35);
+  letter-spacing: 0.04em;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  text-align: center;
+  text-decoration: none;
+}
+
+.spd-cta-btn:hover {
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(249, 115, 22, 0.45);
+}
+
+/* Trust Badges */
+.spd-trust-badges {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  padding: 8px 0;
+}
+
+.spd-trust-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+  .spd-sidebar-sticky {
+    position: static;
+  }
+
+  .spd-images-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .spd-image-card {
+    height: 180px;
+  }
+
+  .spd-title {
+    font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .spd-calc-card {
+    padding: 20px;
+  }
+
+  .spd-input {
+    font-size: 16px;
+    padding: 10px 8px;
+  }
+
+  .spd-cta-btn {
+    font-size: 16px;
+    padding: 16px;
+  }
+
+  .spd-content-card {
+    padding: 20px;
+  }
+
+  .spd-trust-badges {
+    gap: 16px;
+  }
+}
